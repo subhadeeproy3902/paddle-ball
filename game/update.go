@@ -7,6 +7,7 @@ package game
 
 import (
 	"math"
+	"math/rand"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -60,7 +61,7 @@ func (m Model) handleKey(k tea.KeyMsg) Model {
 		switch ks {
 		case "up", "k", "w":
 			m.menuSel = (m.menuSel + 3) % 4
-		case "down", "j", "s":
+		case "down", "j":
 			m.menuSel = (m.menuSel + 1) % 4
 		case "enter", " ":
 			m.mode = GameMode(m.menuSel)

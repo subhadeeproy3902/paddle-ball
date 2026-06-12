@@ -266,6 +266,7 @@ func (m Model) buildPlayArea(t *ui.Theme) string {
 			idx = i
 		}
 		// Shift trail idx: 0=farthest=darkest
+		idx = len(trailGlyphs) - 1 - idx
 		tidx := len(t.Trail) - 1 - i
 		if tidx < 0 {
 			tidx = 0
