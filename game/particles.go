@@ -5,6 +5,10 @@ import (
 	"math/rand"
 )
 
+// particles.go — a deliberately restrained particle system. Counts are small
+// and colors come from the active theme (its muted/accent tones), so impacts
+// read as a soft spark rather than confetti.
+
 // updateParticles advances every live particle and removes dead ones.
 func (m *Model) updateParticles(dt float64) {
 	alive := m.particles[:0]
@@ -20,57 +24,42 @@ func (m *Model) updateParticles(dt float64) {
 	m.particles = alive
 }
 
-// spawnWallParticles creates a small burst when the ball hits a wall.
-func (m *Model) spawnWallParticles(x, y int, side string) {
-	var col string
-	switch side {
-	case "top":
-		col = "#4ECDC4"
-	default: // lr
-		col = "#4ECDC4"
-	}
-	glyphs := []rune{'·', '˙', '′', '*', '•', '∘'}
-	n := 3 + rand.Intn(4)
+// spawnWallParticles creates a small, quiet burst when the ball hits a wall.
+func (m *Model) spawnWallParticles(x, y int) {
+	col := m.theme().Wall
+	glyphs := []rune{'·', '˙', '∘', '•'}
+	n := 2 + rand.Intn(2)
 	for i := 0; i < n; i++ {
-		var vx, vy float64
-		switch side {
-		case "top":
-			vx = (rand.Float64() - 0.5) * 12
-			vy = rand.Float64() * 8
-		case "lr":
-			if x == 0 {
-				vx = rand.Float64() * 10
-			} else {
-				vx = -rand.Float64() * 10
-			}
-			vy = (rand.Float64() - 0.5) * 10
-		}
+		a := rand.Float64() * 2 * math.Pi
+		s := 3.0 + rand.Float64()*6.0
 		m.particles = append(m.particles, Particle{
 			X: float64(x), Y: float64(y),
-			VX:    vx,
-			VY:    vy,
+			VX:    s * math.Cos(a),
+			VY:    s * math.Sin(a),
 			Life:  1.0,
-			Decay: 1.8 + rand.Float64()*2.0,
+			Decay: 2.4 + rand.Float64()*2.0,
 			Glyph: glyphs[rand.Intn(len(glyphs))],
 			Color: col,
 		})
 	}
 }
 
-// spawnPaddleParticles creates the spark burst when the ball hits the paddle.
+// spawnPaddleParticles creates the spark burst when the ball strikes the paddle.
+// It fires an upward hemisphere in the theme accent + ball tones.
 func (m *Model) spawnPaddleParticles(x, y int) {
-	glyphs := []rune{'✦', '✧', '·', '*', '◆', '˙'}
-	colors := []string{"#00FFFF", "#FFFFFF", "#FFD700", "#C3E88D"}
-	n := 5 + rand.Intn(4)
+	t := m.theme()
+	glyphs := []rune{'✦', '✧', '·', '˙'}
+	colors := []string{t.Accent, t.Ball, t.Muted}
+	n := 3 + rand.Intn(3)
 	for i := 0; i < n; i++ {
-		a := rand.Float64()*math.Pi + math.Pi // upward hemisphere (π to 2π)
-		s := 4.0 + rand.Float64()*12.0
+		a := rand.Float64()*math.Pi + math.Pi // upward hemisphere (π … 2π)
+		s := 4.0 + rand.Float64()*10.0
 		m.particles = append(m.particles, Particle{
 			X: float64(x), Y: float64(y),
 			VX:    s * math.Cos(a),
 			VY:    s * math.Sin(a),
 			Life:  1.0,
-			Decay: 2.0 + rand.Float64()*2.0,
+			Decay: 2.2 + rand.Float64()*2.0,
 			Glyph: glyphs[rand.Intn(len(glyphs))],
 			Color: colors[rand.Intn(len(colors))],
 		})

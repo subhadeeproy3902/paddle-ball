@@ -1,0 +1,14 @@
+# Build artifacts
+/bin/
+/dist/
+*.exe
+*.out
+coverage.txt
+coverage.html
+
+# Local agent / editor tooling
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db

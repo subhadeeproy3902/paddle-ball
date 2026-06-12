@@ -1,3 +1,5 @@
+version: 2
+
 project_name: paddle-ball
 
 before:
@@ -60,12 +62,16 @@ release:
 
 brews:
   - name: paddle-ball
-    tap:
+    repository:
       owner: subhadeeproy3902
       name: homebrew-paddle-ball
-    folder: Formula
+    directory: Formula
+    # Generate the formula as a build artifact but don't push to the tap repo
+    # unless HOMEBREW_TAP_GITHUB_TOKEN is configured — keeps tagged releases
+    # green before the tap exists. Set to false once the tap + token are ready.
+    skip_upload: true
     homepage: "https://github.com/subhadeeproy3902/paddle-ball"
-    description: "🏓 A physics-based neon terminal paddleball game with score history"
+    description: "A minimalist physics-based terminal paddleball game with score history"
     license: MIT
     test: |
       system "#{bin}/paddle-ball version"

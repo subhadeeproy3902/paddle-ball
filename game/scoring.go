@@ -17,8 +17,7 @@ func (m *Model) scoreHit(edgeHit bool) {
 	if edgeHit {
 		pts += 2 // edge bonus
 	}
-	// Phase bonus
-	switch m.curPhase.Num {
+	switch m.curPhase.Num { // phase bonus
 	case 4:
 		pts += 2
 	case 5:
@@ -32,7 +31,7 @@ func (m *Model) scoreHit(edgeHit bool) {
 
 	earned := int(math.Round(float64(pts) * mult))
 
-	// Rally milestone bonuses
+	// Rally milestone bonuses.
 	bonus := 0
 	switch m.streak {
 	case 50:
@@ -42,10 +41,18 @@ func (m *Model) scoreHit(edgeHit bool) {
 	case 200:
 		bonus = 200
 	}
+	if bonus > 0 {
+		m.requestSfx(SfxPhase)
+	}
 	earned += bonus
 	m.score += earned
 
-	// Floating score label
+	// Floating "+N" label — accent when boosted, muted otherwise.
+	t := m.theme()
+	col := t.Muted
+	if mult > 1.0 || edgeHit || bonus > 0 {
+		col = t.Accent
+	}
 	label := fmt.Sprintf("+%d", earned)
 	if mult > 1.0 {
 		label += fmt.Sprintf(" ×%.1g", mult)
@@ -54,7 +61,7 @@ func (m *Model) scoreHit(edgeHit bool) {
 		X:     m.paddleX + float64(m.paddleW)/2 - float64(len(label))/2,
 		Y:     float64(m.paddleRowY() - 1),
 		Text:  label,
-		Color: scoreColor(earned),
+		Color: col,
 		Life:  1.0,
 		Decay: 1.3,
 	})
@@ -74,59 +81,46 @@ func (m *Model) streakMult() float64 {
 	}
 }
 
-// checkPhaseTransition upgrades difficulty when score crosses a threshold.
+// checkPhaseTransition upgrades difficulty when the score crosses a threshold.
 func (m *Model) checkPhaseTransition() {
 	np := PhaseForScore(m.score)
-	if np.Num > m.curPhase.Num {
-		m.curPhase = np
-		m.paddleW = np.PaddleW
-		// Clamp paddle position after size change
-		m.clampPaddleTarget()
-
-		// Speed-bump the ball to the new phase speed
-		speed := BaseSpeed * np.SpeedMult
-		curr := math.Sqrt(m.ball.VX*m.ball.VX + m.ball.VY*m.ball.VY)
-		if curr > 0 {
-			m.ball.VX = m.ball.VX / curr * speed
-			m.ball.VY = m.ball.VY / curr * speed
-		}
-
-		m.bannerText = fmt.Sprintf("  %s  PHASE %d — %s  %s  ",
-			np.Emoji, np.Num, np.Name, np.Emoji)
-		m.bannerColor = np.Color
-		m.bannerTTL = 1.8
+	if np.Num <= m.curPhase.Num {
+		return
 	}
+	m.curPhase = np
+	m.paddleW = np.PaddleW
+	m.clampPaddleTarget()
+
+	// Re-normalise the ball to the new phase speed.
+	speed := BaseSpeed * np.SpeedMult
+	if curr := math.Hypot(m.ball.VX, m.ball.VY); curr > 0 {
+		m.ball.VX = m.ball.VX / curr * speed
+		m.ball.VY = m.ball.VY / curr * speed
+	}
+
+	m.bannerText = fmt.Sprintf("PHASE %d — %s", np.Num, np.Name)
+	m.bannerColor = m.theme().Phase[np.Num-1]
+	m.bannerTTL = 1.6
+	m.requestSfx(SfxPhase)
 }
 
-// RankForScore returns a display rank and accent colour for a final score.
-func RankForScore(score int) (string, string) {
+// RankForScore returns a display rank and a tier index (0 = lowest). The view
+// maps the tier onto the active theme's ramp so the rank colour stays on-palette.
+func RankForScore(score int) (string, int) {
 	switch {
 	case score >= 500:
-		return "🏆 God Mode", "#FFD700"
+		return "God Mode", 6
 	case score >= 200:
-		return "💎 Grandmaster", "#89DDFF"
+		return "Grandmaster", 5
 	case score >= 100:
-		return "🌟 Legend", "#C3E88D"
+		return "Legend", 4
 	case score >= 50:
-		return "⚡ Speedster", "#FFCB6B"
+		return "Speedster", 3
 	case score >= 25:
-		return "🔥 Baller", "#FF8C00"
+		return "Baller", 2
 	case score >= 10:
-		return "🎮 Rookie", "#FF5370"
+		return "Rookie", 1
 	default:
-		return "🐣 Hatchling", "#AAAAAA"
-	}
-}
-
-func scoreColor(pts int) string {
-	switch {
-	case pts >= 10:
-		return "#FF5370"
-	case pts >= 5:
-		return "#FFCB6B"
-	case pts >= 3:
-		return "#C3E88D"
-	default:
-		return "#00FFFF"
+		return "Hatchling", 0
 	}
 }

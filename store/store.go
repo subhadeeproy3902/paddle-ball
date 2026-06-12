@@ -32,7 +32,8 @@ type AggStats struct {
 
 // Config holds persistent user preferences.
 type Config struct {
-	ThemeIndex int `json:"themeIndex"`
+	ThemeIndex int  `json:"themeIndex"`
+	Muted      bool `json:"muted"`
 }
 
 // Store handles all disk I/O for scores and config.
@@ -137,6 +138,17 @@ func (s *Store) LoadConfig() Config {
 func (s *Store) SaveTheme(idx int) {
 	c := s.LoadConfig()
 	c.ThemeIndex = idx
+	s.saveConfig(c)
+}
+
+// SaveMuted persists the sound on/off preference.
+func (s *Store) SaveMuted(muted bool) {
+	c := s.LoadConfig()
+	c.Muted = muted
+	s.saveConfig(c)
+}
+
+func (s *Store) saveConfig(c Config) {
 	data, _ := json.MarshalIndent(c, "", "  ")
 	_ = os.WriteFile(s.configFile, data, 0o644)
 }

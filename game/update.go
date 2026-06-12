@@ -10,9 +10,10 @@ import (
 	"math/rand"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/bubbles/progress"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/subhadeeproy3902/paddle-ball/store"
+	"github.com/subhadeeproy3902/paddle-ball/ui"
 )
 
 // Update is the bubbletea Update function — called for every message.
@@ -34,17 +35,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// ── keyboard ───────────────────────────────────────────────────────────
 	case tea.KeyMsg:
-		if msg.String() == "ctrl+c" {
+		ks := msg.String()
+		if ks == "ctrl+c" || (m.appPhase == PhaseTitle && (ks == "q" || ks == "Q")) {
 			return m, tea.Quit
 		}
 		m = m.handleKey(msg)
+
+	// ── mouse: paddle follows the cursor while playing ─────────────────────
+	case tea.MouseMsg:
+		if m.appPhase == PhasePlaying {
+			m.setPaddleCenter(float64(msg.X))
+		}
 
 	// ── game tick ──────────────────────────────────────────────────────────
 	case TickMsg:
 		m = m.tick(time.Time(msg))
 	}
 
-	return m, schedTick()
+	return m, tea.Batch(schedTick(), m.flushBell())
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -67,23 +75,28 @@ func (m Model) handleKey(k tea.KeyMsg) Model {
 			m.mode = GameMode(m.menuSel)
 			m.startCountdown()
 		case "1":
-			m.mode = ModeClassic; m.startCountdown()
+			m.mode = ModeClassic
+			m.startCountdown()
 		case "2":
-			m.mode = ModeArcade; m.startCountdown()
+			m.mode = ModeArcade
+			m.startCountdown()
 		case "3":
-			m.mode = ModeZen; m.startCountdown()
+			m.mode = ModeZen
+			m.startCountdown()
 		case "4":
-			m.mode = ModeTimeTrial; m.startCountdown()
+			m.mode = ModeTimeTrial
+			m.startCountdown()
 		case "s", "S":
 			m.appPhase = PhaseLeaderboard
+			m.confirmClear = false
 			recs, _ := m.st.LoadAll()
 			m.scores = recs
 		case "t", "T":
 			m.cycleTheme()
+		case "m", "M":
+			m.toggleMute()
 		case "?", "h", "H":
 			m.appPhase = PhaseHelp
-		case "q", "Q":
-			// handled by ctrl+c above; q from title goes to quit
 		}
 
 	// ── COUNTDOWN ──────────────────────────────────────────────────────────
@@ -106,6 +119,8 @@ func (m Model) handleKey(k tea.KeyMsg) Model {
 			m.appPhase = PhasePaused
 		case "t", "T":
 			m.cycleTheme()
+		case "m", "M":
+			m.toggleMute()
 		case "?":
 			m.appPhase = PhaseHelp
 		case "q", "Q", "esc":
@@ -131,27 +146,48 @@ func (m Model) handleKey(k tea.KeyMsg) Model {
 			m.startCountdown()
 		case "s", "S":
 			m.appPhase = PhaseLeaderboard
+			m.confirmClear = false
 			recs, _ := m.st.LoadAll()
 			m.scores = recs
+		case "m", "M":
+			m.toggleMute()
 		case "q", "Q", "esc":
 			m.appPhase = PhaseTitle
 		}
 
 	// ── LEADERBOARD ────────────────────────────────────────────────────────
 	case PhaseLeaderboard:
+		// 'C' clears all history — first press arms, second press wipes.
+		if ks == "c" || ks == "C" {
+			if m.confirmClear {
+				_ = m.st.Reset()
+				m.confirmClear = false
+				m.reloadScores()
+				m.hiScore = m.st.HiScore(m.mode.Code())
+			} else {
+				m.confirmClear = true
+			}
+			return m
+		}
+		m.confirmClear = false // any other key cancels a pending clear
 		switch ks {
 		case "q", "Q", "esc", "enter":
 			m.appPhase = PhaseTitle
 		case "0":
-			m.lbFilter = ""; m.reloadScores()
+			m.lbFilter = ""
+			m.reloadScores()
 		case "1":
-			m.lbFilter = "classic"; m.reloadScores()
+			m.lbFilter = "classic"
+			m.reloadScores()
 		case "2":
-			m.lbFilter = "arcade"; m.reloadScores()
+			m.lbFilter = "arcade"
+			m.reloadScores()
 		case "3":
-			m.lbFilter = "zen"; m.reloadScores()
+			m.lbFilter = "zen"
+			m.reloadScores()
 		case "4":
-			m.lbFilter = "timed"; m.reloadScores()
+			m.lbFilter = "timed"
+			m.reloadScores()
 		}
 
 	// ── HELP ───────────────────────────────────────────────────────────────
@@ -170,6 +206,20 @@ func (m *Model) movePaddleTarget(delta float64) {
 	m.paddleDir = math.Copysign(1, delta)
 }
 
+// setPaddleCenter aims the paddle so its centre sits under the given column
+// (used by mouse control). The spring still smooths the actual motion.
+func (m *Model) setPaddleCenter(col float64) {
+	m.paddleTargX = col - float64(m.paddleW)/2
+	m.clampPaddleTarget()
+	m.lastKeyTime = time.Now()
+}
+
+// toggleMute flips the master sound switch and persists it.
+func (m *Model) toggleMute() {
+	m.soundOn = !m.soundOn
+	m.st.SaveMuted(!m.soundOn)
+}
+
 func (m *Model) clampPaddleTarget() {
 	max := float64(m.playW-1) - float64(m.paddleW)
 	if m.paddleTargX < 0 {
@@ -181,8 +231,15 @@ func (m *Model) clampPaddleTarget() {
 }
 
 func (m *Model) cycleTheme() {
-	m.themeIdx = (m.themeIdx + 1) % 4
+	m.themeIdx = (m.themeIdx + 1) % ui.ThemeCount
 	m.st.SaveTheme(m.themeIdx)
+	// Re-tint the power-up progress bar to the new palette.
+	t := m.theme()
+	m.puBar = progress.New(
+		progress.WithGradient(t.Faint, t.Accent),
+		progress.WithWidth(12),
+		progress.WithoutPercentage(),
+	)
 }
 
 func (m *Model) reloadScores() {
@@ -226,6 +283,9 @@ func (m Model) tickCountdown(now time.Time) Model {
 		if m.countdown > 0 {
 			m.countdown--
 			m.cdTTL = 1.0
+			if m.countdown == 0 {
+				m.requestSfx(SfxStart) // "GO!"
+			}
 		} else {
 			m.startPlaying()
 		}
@@ -239,7 +299,9 @@ func (m Model) tickGame(now time.Time) Model {
 		return m
 	}
 	dt := now.Sub(m.lastTick).Seconds()
-	if dt > 0.05 { dt = 0.05 } // cap: prevents physics explosion after alt-tab
+	if dt > 0.05 {
+		dt = 0.05
+	} // cap: prevents physics explosion after alt-tab
 	m.lastTick = now
 	m.elapsed = now.Sub(m.gameStart)
 
@@ -404,8 +466,8 @@ func (m *Model) activatePU(kind PowerUpKind) {
 	}
 
 	m.floatTxts = append(m.floatTxts, FloatText{
-		X: m.paddleX + float64(m.paddleW)/2 - 4,
-		Y: float64(m.playH - PaddleRow - 2),
+		X:     m.paddleX + float64(m.paddleW)/2 - 4,
+		Y:     float64(m.playH - PaddleRow - 2),
 		Text:  kind.Name(),
 		Color: kind.Color(),
 		Life:  1.0, Decay: 0.7,
@@ -447,8 +509,11 @@ func (m *Model) endGame() {
 		Timestamp:   time.Now(),
 		Version:     "1.0.0",
 	})
-	if m.score > m.hiScore {
+	if m.score > 0 && m.score >= m.hiScore {
 		m.hiScore = m.score
+		m.requestSfx(SfxBest)
+	} else {
+		m.requestSfx(SfxOver)
 	}
 }
 
@@ -456,5 +521,5 @@ func (m *Model) endGame() {
 // Small random helpers (avoids dot-importing math/rand everywhere)
 // ─────────────────────────────────────────────────────────────────────────────
 
-func randN(n int) int     { return rand.Intn(n) }
-func randF() float64      { return rand.Float64() }
+func randN(n int) int { return rand.Intn(n) }
+func randF() float64  { return rand.Float64() }

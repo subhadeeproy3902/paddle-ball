@@ -14,8 +14,8 @@ import (
 	"math/rand"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/bubbles/progress"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/harmonica"
 	"github.com/subhadeeproy3902/paddle-ball/store"
 	"github.com/subhadeeproy3902/paddle-ball/ui"
@@ -26,13 +26,14 @@ import (
 // ─────────────────────────────────────────────────────────────────────────────
 
 const (
-	BaseSpeed       = 22.0 // cells/second at Phase 1
+	BaseSpeed       = 21.0 // cells/second at Phase 1
 	KeyMoveStep     = 4.0  // paddle target cells per key event
 	PaddleRow       = 3    // rows from bottom of play area
-	SpringFreq      = 22.0 // harmonica angular frequency
-	SpringDamp      = 0.65 // harmonica damping ratio (< 1 = satisfying overshoot)
+	SpringFreq      = 26.0 // harmonica angular frequency (snappier chase)
+	SpringDamp      = 0.72 // harmonica damping ratio (< 1 = a touch of overshoot)
 	PUCatchInterval = 7    // catches between power-up spawns (Arcade/Zen)
-	KeyAutoRelease  = 150  // ms of no key → stop paddle movement
+	HitBellGap      = 0.11 // min seconds between paddle-hit beeps (anti-machine-gun)
+	MaxSubSteps     = 16   // physics sub-steps cap per frame (continuous collision)
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -44,7 +45,7 @@ type TickMsg time.Time
 type AppPhase int
 
 const (
-	PhaseTitle       AppPhase = iota
+	PhaseTitle AppPhase = iota
 	PhaseCountdown
 	PhasePlaying
 	PhasePaused
@@ -56,7 +57,7 @@ const (
 type GameMode int
 
 const (
-	ModeClassic  GameMode = iota
+	ModeClassic GameMode = iota
 	ModeArcade
 	ModeZen
 	ModeTimeTrial
@@ -122,8 +123,11 @@ func (k PowerUpKind) Name() string {
 	return []string{"Wide Paddle", "Slow Mo", "Fire Paddle", "Iron Shield", "Ghost Ball", "BOMB"}[k]
 }
 func (k PowerUpKind) Duration() float64 { return []float64{12, 8, 15, 0, 0, 10}[k] }
+
+// Color returns a restrained, distinguishable tint for each power-up. These are
+// the one place several hues coexist (Arcade/Zen only) — kept muted on purpose.
 func (k PowerUpKind) Color() string {
-	return []string{"#89DDFF", "#C3E88D", "#FFD700", "#4ECDC4", "#FFFFFF", "#FF5370"}[k]
+	return []string{"#7fa8c9", "#6fb3a8", "#d6a35c", "#79b0bd", "#d8d4cc", "#c8705c"}[k]
 }
 
 // FallingPU is a power-up falling from the top of the play area.
@@ -142,12 +146,11 @@ type ActivePU struct {
 	Total float64 // original duration (for progress bar)
 }
 
-// Phase — difficulty level configuration.
+// Phase — difficulty level configuration. Color is resolved at render time
+// from the active theme's Phase ramp (by Num), keeping the palette cohesive.
 type Phase struct {
 	Num       int
 	Name      string
-	Color     string
-	Emoji     string
 	MinScore  int
 	SpeedMult float64 // multiplied by BaseSpeed
 	PaddleW   int     // paddle width in cells
@@ -156,11 +159,11 @@ type Phase struct {
 
 // Phases lists all five difficulty levels in ascending order.
 var Phases = []Phase{
-	{1, "Warm Up",    "#C3E88D", "🌱", 0,   1.00, 14, 1},
-	{2, "Heating Up", "#FFCB6B", "🔥", 10,  1.25, 12, 2},
-	{3, "On Fire",    "#FF8C00", "💥", 25,  1.55, 10, 3},
-	{4, "Blazing",    "#FF5370", "⚡", 50,  1.90, 8,  4},
-	{5, "INSANE",     "#FF00FF", "🏆", 100, 2.35, 6,  5},
+	{1, "Warm Up", 0, 1.00, 14, 2},
+	{2, "Heating Up", 10, 1.22, 12, 3},
+	{3, "On Fire", 25, 1.50, 10, 4},
+	{4, "Blazing", 50, 1.85, 8, 5},
+	{5, "Insane", 100, 2.30, 6, 6},
 }
 
 // PhaseForScore returns the Phase that best matches the given score.
@@ -221,12 +224,12 @@ type Model struct {
 	ghostActive  bool
 
 	// ── scoring ────────────────────────────────────────────────────────────
-	score     int
-	hiScore   int
-	streak    int
-	maxStreak int
-	catches   int
-	misses    int
+	score              int
+	hiScore            int
+	streak             int
+	maxStreak          int
+	catches            int
+	misses             int
 	catchesSinceLastPU int
 
 	// ── difficulty ─────────────────────────────────────────────────────────
@@ -256,11 +259,20 @@ type Model struct {
 	// ── theme ──────────────────────────────────────────────────────────────
 	themeIdx int
 
+	// ── sound (terminal bell SFX) ──────────────────────────────────────────
+	soundOn   bool
+	bellCount int     // bells to ring on the next render flush (drained in Update)
+	hitBellCD float64 // cooldown so rapid rallies don't machine-gun the bell
+
 	// ── store / leaderboard ────────────────────────────────────────────────
-	st       *store.Store
-	scores   []store.ScoreRecord
-	lbFilter string
+	st           *store.Store
+	scores       []store.ScoreRecord
+	lbFilter     string
+	confirmClear bool // leaderboard "press C again to wipe history" guard
 }
+
+// theme returns the active theme palette.
+func (m *Model) theme() *ui.Theme { return &ui.Themes[m.themeIdx] }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constructor
@@ -283,9 +295,13 @@ func NewModel(modeStr, themeStr string) Model {
 		jumpToGame = true
 	}
 
+	if themeIdx < 0 || themeIdx >= ui.ThemeCount {
+		themeIdx = 0
+	}
+	t := &ui.Themes[themeIdx]
 	bar := progress.New(
-		progress.WithGradient("#C3E88D", "#FF5370"),
-		progress.WithWidth(14),
+		progress.WithGradient(t.Faint, t.Accent),
+		progress.WithWidth(12),
 		progress.WithoutPercentage(),
 	)
 
@@ -296,6 +312,7 @@ func NewModel(modeStr, themeStr string) Model {
 		mode:         mode,
 		menuSel:      0,
 		themeIdx:     themeIdx,
+		soundOn:      !cfg.Muted,
 		puBar:        bar,
 		paddleSpring: spring,
 		st:           st,
@@ -359,6 +376,8 @@ func (m *Model) startPlaying() {
 	m.ghostActive = false
 	m.catchesSinceLastPU = 0
 	m.bannerTTL = 0
+	m.hitBellCD = 0
+	m.bellCount = 0
 	m.curPhase = Phases[0]
 
 	switch m.mode {

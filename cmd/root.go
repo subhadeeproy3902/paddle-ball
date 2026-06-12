@@ -28,11 +28,11 @@ func Execute(version, commit, date string) {
 
 	root := &cobra.Command{
 		Use:   "paddle-ball",
-		Short: "🏓 A physics-based neon terminal paddleball game",
-		Long: lipgloss.NewStyle().Foreground(lipgloss.Color("#00FFFF")).Bold(true).
-			Render("PADDLEBALL") +
-			" — vertical arcade paddleball for the terminal.\n" +
-			"Spring physics · Particle effects · Score history · Power-ups",
+		Short: "A minimalist physics-based terminal paddleball game",
+		Long: lipgloss.NewStyle().Foreground(lipgloss.Color("#cc785c")).Bold(true).
+			Render("paddle-ball") +
+			" — a minimalist paddleball game for the terminal.\n" +
+			"Sub-stepped physics · spring paddle · five themes · score history",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runGame("", "")
 		},
@@ -41,15 +41,15 @@ func Execute(version, commit, date string) {
 	// ── play ─────────────────────────────────────────────────────────────
 	var playMode, playTheme string
 	playCmd := &cobra.Command{
-		Use:   "play",
-		Short: "Start a game immediately",
-		Example: "  paddle-ball play\n  paddle-ball play --mode arcade\n  paddle-ball play --mode timed --theme ocean",
+		Use:     "play",
+		Short:   "Start a game immediately",
+		Example: "  paddle-ball play\n  paddle-ball play --mode arcade\n  paddle-ball play --mode timed --theme nord",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runGame(playMode, playTheme)
 		},
 	}
 	playCmd.Flags().StringVarP(&playMode, "mode", "m", "", "Game mode: classic | arcade | zen | timed")
-	playCmd.Flags().StringVarP(&playTheme, "theme", "t", "", "Theme: neon | mono | sunset | ocean")
+	playCmd.Flags().StringVarP(&playTheme, "theme", "t", "", "Theme: claude | mono | nord | moss | ember")
 
 	// ── scores ───────────────────────────────────────────────────────────
 	var scoresMode string
@@ -85,8 +85,8 @@ func Execute(version, commit, date string) {
 				enc.SetIndent("", "  ")
 				return enc.Encode(top)
 			}
-			style := lipgloss.NewStyle().Foreground(lipgloss.Color("#00FFFF")).Bold(true)
-			fmt.Println(style.Render("🏆  PADDLEBALL — SCORE HISTORY"))
+			style := lipgloss.NewStyle().Foreground(lipgloss.Color("#cc785c")).Bold(true)
+			fmt.Println(style.Render("paddle-ball — score history"))
 			fmt.Println()
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 			fmt.Fprintln(w, "#\tSCORE\tMODE\tSTREAK\tDURATION\tDATE")

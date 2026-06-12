@@ -1,29 +1,30 @@
-# 🏓 paddle-ball
+# paddle-ball
 
-> A physics-based neon terminal paddleball game — smooth delta-time movement,
-> particle effects, power-ups, persistent score history, and four visual themes.
+> A minimalist, physics-based paddleball game for the terminal — sub-stepped
+> collisions that never glitch, a spring-driven paddle (keys or mouse), five
+> restrained themes, four modes, and a persistent score history. One binary.
 
-[![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://go.dev)
-[![Release](https://img.shields.io/github/v/release/subhadeeproy3902/paddle-ball?style=flat&color=00FFFF)](https://github.com/subhadeeproy3902/paddle-ball/releases)
-[![License](https://img.shields.io/badge/license-MIT-C3E88D?style=flat)](LICENSE)
-[![Twitter](https://img.shields.io/badge/Twitter-mvp__Subha-1DA1F2?style=flat&logo=twitter)](https://twitter.com/mvp_Subha)
-
----
-
-## ✨ Features
-
-- **Real physics** — delta-time ball movement, paddle angle + spin transfer
-- **5 difficulty phases** — Warm Up → INSANE, auto-escalating by score
-- **4 game modes** — Classic, Arcade (lives + power-ups), Zen, Time Trial
-- **6 power-ups** — Wide Paddle, Slow Mo, Fire Paddle, Iron Shield, Ghost Ball, Bomb
-- **Particle system** — wall impacts, paddle flash, score pops, game-over explosion
-- **Score history** — persistent JSON store at `~/.paddle-ball/scores.json`
-- **4 color themes** — Neon Arcade, Monochrome, Sunset, Ocean Night
-- **Single binary** — zero runtime dependencies, one command install
+[![Go Version](https://img.shields.io/badge/Go-1.21+-555?style=flat&logo=go&logoColor=white)](https://go.dev)
+[![Release](https://img.shields.io/github/v/release/subhadeeproy3902/paddle-ball?style=flat&color=cc785c)](https://github.com/subhadeeproy3902/paddle-ball/releases)
+[![License](https://img.shields.io/badge/license-MIT-a09d96?style=flat)](LICENSE)
 
 ---
 
-## 🚀 Install
+## Features
+
+- **Sub-stepped physics** — the ball advances in collision-safe sub-steps, so it never tunnels through a wall or resets mid-rally, even at top speed.
+- **Spring-driven paddle** — a harmonica spring gives weighty, fluid control. Use the keys, or just move your **mouse** and the paddle follows.
+- **Five quiet themes** — Claude (default), Mono, Nord, Moss, Ember. Each leans on a single accent — no rainbow, no neon, no glow.
+- **Four modes** — Classic, Arcade (lives + power-ups), Zen, and Time Trial.
+- **Six power-ups** — Wide Paddle, Slow Mo, Fire Paddle, Iron Shield, Ghost Ball, Bomb (Arcade / Zen).
+- **Five difficulty phases** — auto-escalating by score, Warm Up → Insane.
+- **Sound** — restrained terminal-bell feedback on key moments; toggle with `M`.
+- **Score history** — persistent JSON store with an in-game leaderboard, per-mode filters, and lifetime stats.
+- **Single binary** — pure Go, zero runtime dependencies, one-command install.
+
+---
+
+## Install
 
 ### One-line (macOS / Linux)
 ```bash
@@ -36,29 +37,6 @@ brew tap subhadeeproy3902/paddle-ball
 brew install paddle-ball
 ```
 
-### apt (Debian / Ubuntu)
-```bash
-curl -fsSL https://packages.paddle-ball.dev/install.sh | sudo bash
-# or manually:
-sudo apt install paddle-ball
-```
-
-### Snap (Linux)
-```bash
-sudo snap install paddle-ball
-```
-
-### Scoop (Windows)
-```powershell
-scoop bucket add paddle-ball https://github.com/subhadeeproy3902/scoop-paddle-ball
-scoop install paddle-ball
-```
-
-### WinGet (Windows)
-```powershell
-winget install subhadeeproy3902.paddle-ball
-```
-
 ### Go install
 ```bash
 go install github.com/subhadeeproy3902/paddle-ball@latest
@@ -69,92 +47,99 @@ go install github.com/subhadeeproy3902/paddle-ball@latest
 docker run --rm -it ghcr.io/subhadeeproy3902/paddle-ball:latest
 ```
 
+Also available via apt/rpm/apk packages and Scoop — see the [releases page](https://github.com/subhadeeproy3902/paddle-ball/releases).
+
 ---
 
-## 🎮 Usage
+## Usage
 
 ```
-paddle-ball                     # Title screen
-paddle-ball play                # Jump straight in (Classic)
+paddle-ball                     # title screen
+paddle-ball play                # jump straight in (Classic)
 paddle-ball play --mode arcade  # Arcade mode with power-ups
-paddle-ball play --mode zen     # Infinite lives
+paddle-ball play --mode zen     # endless rally
 paddle-ball play --mode timed   # 60-second blitz
-paddle-ball scores              # View leaderboard
-paddle-ball scores --all        # Full history
-paddle-ball scores --json       # Raw JSON dump
-paddle-ball reset               # Wipe saved scores
-paddle-ball version             # Version info
+paddle-ball play --theme nord   # start on a chosen theme
+paddle-ball scores              # leaderboard
+paddle-ball scores --all        # full history
+paddle-ball scores --json       # raw JSON
+paddle-ball reset               # wipe saved scores
+paddle-ball version             # version info
 ```
 
-## 🕹  Controls
+## Controls
 
 | Key | Action |
 |---|---|
-| `↑` `W` `K` | Move paddle up |
-| `↓` `S` `J` | Move paddle down |
-| `P` / `Space` | Pause / Resume |
+| `←` `→` / `A` `D` | Move the paddle |
+| mouse | Paddle follows the cursor |
+| `P` / `Space` | Pause / resume |
 | `T` | Cycle color theme |
-| `?` | Help overlay |
+| `M` | Toggle sound |
+| `C` | Clear score history (on the leaderboard) |
 | `R` | Restart (pause / game over) |
+| `?` / `H` | Help |
 | `Q` / `Ctrl+C` | Quit |
 
 ---
 
-## 🏆 Difficulty Phases
+## Difficulty phases
 
 | Phase | Score | Speed | Paddle |
 |---|---|---|---|
-| 🌱 Warm Up | 0+ | 100 % | 7 cells |
-| 🔥 Heating Up | 10+ | 125 % | 6 cells |
-| 💥 On Fire | 25+ | 155 % | 5 cells |
-| ⚡ Blazing | 50+ | 190 % | 4 cells |
-| 🏆 INSANE | 100+ | 235 % | 3 cells |
+| Warm Up | 0+ | 100% | 14 |
+| Heating Up | 10+ | 122% | 12 |
+| On Fire | 25+ | 150% | 10 |
+| Blazing | 50+ | 185% | 8 |
+| Insane | 100+ | 230% | 6 |
 
 ---
 
-## 🛠  Development
+## Development
 
 ```bash
 git clone https://github.com/subhadeeproy3902/paddle-ball
 cd paddle-ball
 go mod tidy
-make run          # run game
-make build        # binary → bin/paddle-ball
-make test         # unit tests
-make snapshot     # local release build (goreleaser)
+go run .            # run the game
+go test ./...       # unit tests (physics regression suite)
+go build ./...      # build
 ```
 
 ### Release
 ```bash
 git tag v1.0.0
-git push origin v1.0.0   # triggers GitHub Actions → goreleaser
+git push origin v1.0.0   # tags trigger GitHub Actions → GoReleaser
 ```
+Every push and PR runs build / vet / test; only `v*` tags run a release.
 
 ---
 
-## 📁 Project Structure
+## Project structure
 
 ```
 paddle-ball/
 ├── main.go                 Entry point (version injection)
-├── cmd/root.go             All Cobra CLI commands
+├── cmd/root.go             Cobra CLI commands
 ├── game/
-│   ├── types.go            All game types and enums
-│   ├── model.go            Bubbletea Model struct + NewModel
-│   ├── update.go           Bubbletea Update (game loop)
-│   ├── view.go             Bubbletea View (full renderer)
-│   ├── physics.go          Ball/paddle collision math
-│   ├── particles.go        Particle system
-│   └── scoring.go          Points, streaks, phase checks
-├── ui/theme.go             4 color themes + lipgloss helpers
-├── store/store.go          Score persistence (atomic JSON)
+│   ├── model.go            Types, Model struct, constructor
+│   ├── update.go           Bubble Tea Update (input, mouse, ticks)
+│   ├── view.go             Renderer (minimal dark HUD)
+│   ├── physics.go          Sub-stepped collision + paddle response
+│   ├── physics_test.go     Collision regression tests
+│   ├── particles.go        Restrained particle system
+│   ├── scoring.go          Points, streaks, phase transitions
+│   └── sound.go            Terminal-bell sound effects
+├── ui/theme.go             Five color themes + lipgloss helpers
+├── store/store.go          Score + config persistence (atomic JSON)
+├── index.html              Landing page
 ├── .goreleaser.yaml        Cross-compile + publish pipeline
-└── Makefile
+└── .github/workflows       CI (build/vet/test) + tagged release
 ```
 
 ---
 
-## 🔗 Links
+## Links
 
 - **GitHub** — [github.com/subhadeeproy3902/paddle-ball](https://github.com/subhadeeproy3902/paddle-ball)
 - **Twitter** — [@mvp_Subha](https://twitter.com/mvp_Subha)
@@ -162,10 +147,10 @@ paddle-ball/
 
 ---
 
-## 📄 License
+## License
 
 MIT © [Subhadeep Roy](https://github.com/subhadeeproy3902)
 
-*Built with [Bubble Tea](https://github.com/charmbracelet/bubbletea) +
+*Built with [Bubble Tea](https://github.com/charmbracelet/bubbletea) and
 [Lip Gloss](https://github.com/charmbracelet/lipgloss) from the
 [Charm](https://charm.sh) ecosystem.*
