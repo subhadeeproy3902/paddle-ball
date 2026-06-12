@@ -65,6 +65,9 @@ brews:
     repository:
       owner: subhadeeproy3902
       name: homebrew-paddle-ball
+      # Push with the PAT (HOMEBREW_TOKEN secret) — the automatic GITHUB_TOKEN
+      # is scoped to this repo only and can't write to the tap repo.
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     directory: Formula
     # Tap repo + HOMEBREW_TOKEN secret are configured, so publish the formula.
     skip_upload: false
