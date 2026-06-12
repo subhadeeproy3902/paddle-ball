@@ -3,11 +3,84 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>paddle-ball — a terminal paddle game</title>
-<meta name="description" content="A minimalist, physics-based paddleball game for the terminal. Smooth sub-stepped collisions, five quiet themes, four modes, and a persistent score history — one binary." />
+
+<!-- ── primary ── -->
+<title>paddle-ball — a minimalist terminal paddleball game</title>
+<meta name="description" content="paddle-ball is a minimalist, physics-based paddleball game for the terminal: sub-stepped collisions that never glitch, a spring-driven paddle you steer with keys or mouse, five quiet themes, four modes, sound, and a persistent score history. One Go binary, installable on macOS, Linux, and Windows." />
+<meta name="keywords" content="paddle-ball, terminal game, TUI game, paddleball, Go game, Bubble Tea, CLI game, terminal paddle game, ascii game, command line game, retro arcade terminal" />
+<meta name="author" content="Subhadeep Roy" />
+<meta name="theme-color" content="#181715" />
+<meta name="color-scheme" content="dark" />
+<meta name="robots" content="index, follow, max-image-preview:large" />
+<link rel="canonical" href="https://paddleball.mvp-subha.me/" />
+
+<!-- ── icons ── -->
+<link rel="icon" type="image/svg+xml" href="/assets/logo.svg" />
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+
+<!-- ── Open Graph (SIO) ── -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="paddle-ball" />
+<meta property="og:title" content="paddle-ball — a minimalist terminal paddleball game" />
+<meta property="og:description" content="Physics-based paddleball for your terminal: sub-stepped collisions, a spring-driven paddle, five quiet themes, four modes. One binary, any OS." />
+<meta property="og:url" content="https://paddleball.mvp-subha.me/" />
+<meta property="og:image" content="https://paddleball.mvp-subha.me/assets/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="paddle-ball — a minimalist terminal paddleball game" />
+
+<!-- ── Twitter / X card ── -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="paddle-ball — a minimalist terminal paddleball game" />
+<meta name="twitter:description" content="Physics-based paddleball for your terminal. Sub-stepped collisions, spring paddle, five themes, four modes. One binary." />
+<meta name="twitter:image" content="https://paddleball.mvp-subha.me/assets/og.png" />
+<meta name="twitter:image:alt" content="paddle-ball — a minimalist terminal paddleball game" />
+<meta name="twitter:creator" content="@mvp_Subha" />
+
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<!-- ── structured data: SoftwareApplication (SEO/AIO) ── -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "paddle-ball",
+  "applicationCategory": "GameApplication",
+  "applicationSubCategory": "Terminal / CLI game",
+  "operatingSystem": "macOS, Linux, Windows",
+  "description": "A minimalist, physics-based paddleball game for the terminal with sub-stepped collisions, a spring-driven paddle, five themes, four modes, sound, and persistent score history.",
+  "url": "https://paddleball.mvp-subha.me/",
+  "downloadUrl": "https://github.com/subhadeeproy3902/paddle-ball/releases",
+  "softwareVersion": "1.0.0",
+  "license": "https://github.com/subhadeeproy3902/paddle-ball/blob/main/LICENSE",
+  "image": "https://paddleball.mvp-subha.me/assets/og.png",
+  "author": { "@type": "Person", "name": "Subhadeep Roy", "url": "https://github.com/subhadeeproy3902" },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "programmingLanguage": "Go"
+}
+</script>
+
+<!-- ── structured data: FAQ (AEO) ── -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "What is paddle-ball?",
+      "acceptedAnswer": { "@type": "Answer", "text": "paddle-ball is a free, open-source, minimalist paddleball game that runs in your terminal. It uses sub-stepped collision physics, a spring-driven paddle you control with the keyboard or mouse, five restrained themes, and four game modes." } },
+    { "@type": "Question", "name": "How do I install paddle-ball?",
+      "acceptedAnswer": { "@type": "Answer", "text": "On macOS or Linux run: curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/paddle-ball/main/install.sh | bash. You can also use Homebrew (brew install paddle-ball), Go (go install github.com/subhadeeproy3902/paddle-ball@latest), Docker, or download a prebuilt binary from the releases page." } },
+    { "@type": "Question", "name": "Which operating systems are supported?",
+      "acceptedAnswer": { "@type": "Answer", "text": "paddle-ball ships prebuilt binaries for macOS, Linux, and Windows on both amd64 and arm64, plus .deb/.rpm/.apk packages and a Docker image." } },
+    { "@type": "Question", "name": "Is paddle-ball free and open source?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. paddle-ball is MIT-licensed and free. The source is on GitHub at github.com/subhadeeproy3902/paddle-ball." } }
+  ]
+}
+</script>
+
 <style>
   :root {
     --bg: #181715;
@@ -62,7 +135,7 @@
     display: flex; align-items: center; justify-content: space-between;
   }
   .brand { display: flex; align-items: center; gap: 10px; font-weight: 500; letter-spacing: -0.01em; }
-  .brand .mark { color: var(--accent); font-size: 18px; line-height: 1; }
+  .brand .mark { width: 26px; height: 26px; border-radius: 7px; display: block; }
   .nav-links { display: flex; align-items: center; gap: 28px; }
   .nav-links a { color: var(--muted); font-size: 14px; transition: color 0.15s; }
   .nav-links a:hover { color: var(--text); }
@@ -154,14 +227,32 @@
   .mode h3 { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
   .mode p { color: var(--muted); font-size: 14px; }
 
+  /* ── screenshot ── */
+  .shot { margin-top: 8px; }
+  .shot img { width: 100%; height: auto; display: block; border-radius: 14px; border: 1px solid var(--hairline); }
+  .shot figcaption { margin-top: 16px; color: var(--faint); font-size: 13.5px; font-family: var(--mono); text-align: center; }
+
   /* ── install ── */
   .install-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
   .block { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--surface); }
-  .block .bt { padding: 12px 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--hairline); letter-spacing: 0.04em; }
+  .block .bt { padding: 10px 12px 10px 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--hairline); letter-spacing: 0.04em; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .block pre { padding: 18px; overflow-x: auto; }
   .block code { font-family: var(--mono); font-size: 13px; line-height: 1.7; color: var(--text); }
   .block code .c { color: var(--faint); }
   .block code .a { color: var(--accent); }
+  .copy { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 5px 9px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .copy:hover { color: var(--text); border-color: var(--faint); background: var(--elevated); }
+  .copy.done { color: var(--accent); border-color: var(--accent); }
+
+  /* ── faq ── */
+  .faq { display: grid; gap: 0; max-width: 760px; }
+  .faq details { border-bottom: 1px solid var(--hairline); padding: 8px 0; }
+  .faq summary { cursor: pointer; list-style: none; padding: 14px 0; font-size: 17px; font-weight: 500; color: var(--text); display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; color: var(--accent); font-family: var(--mono); font-size: 20px; line-height: 1; }
+  .faq details[open] summary::after { content: "–"; }
+  .faq p { color: var(--muted); font-size: 15px; line-height: 1.65; padding: 0 0 16px; max-width: 68ch; }
+  .faq p code { font-family: var(--mono); font-size: 13px; color: var(--text); background: var(--elevated); padding: 2px 6px; border-radius: 4px; }
 
   /* ── keys table ── */
   .keys { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 40px; max-width: 720px; }
@@ -193,7 +284,7 @@
 
 <nav>
   <div class="nav-in">
-    <a class="brand" href="#top"><span class="mark">✳</span> paddle-ball</a>
+    <a class="brand" href="#top"><img class="mark" src="/assets/logo.svg" alt="paddle-ball logo" width="26" height="26" /> paddle-ball</a>
     <div class="nav-links">
       <a href="#features">Features</a>
       <a href="#modes">Modes</a>
@@ -278,6 +369,21 @@
   </div>
 </section>
 
+<section id="screenshot">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">See it run</span>
+      <h2>The real thing, in your terminal.</h2>
+      <p>An actual frame from Arcade mode — live HUD, a power-up timer, the ball's trail, and the coral paddle. Rendered, not mocked.</p>
+    </div>
+    <figure class="shot">
+      <img src="/assets/screenshot.png" width="1900" height="1360" loading="lazy"
+        alt="paddle-ball running in a terminal: Arcade mode showing score 128, phase 4 Blazing, three lives, a 17 streak, the ball and its trail, the coral paddle, and an active Fire Paddle power-up." />
+      <figcaption>paddle-ball · Arcade · Claude theme</figcaption>
+    </figure>
+  </div>
+</section>
+
 <section id="modes">
   <div class="wrap">
     <div class="sec-head">
@@ -313,21 +419,21 @@
     </div>
     <div class="install-grid">
       <div class="block">
-        <div class="bt">macOS / Linux</div>
+        <div class="bt">macOS / Linux <button class="copy" data-copy="curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/paddle-ball/main/install.sh | bash">Copy</button></div>
         <pre><code><span class="c"># one-line install</span>
 curl -fsSL https://raw.githubusercontent.com/<span class="a">subhadeeproy3902</span>/paddle-ball/main/install.sh | bash</code></pre>
       </div>
       <div class="block">
-        <div class="bt">Homebrew</div>
+        <div class="bt">Homebrew <button class="copy" data-copy="brew install subhadeeproy3902/paddle-ball/paddle-ball">Copy</button></div>
         <pre><code>brew tap subhadeeproy3902/paddle-ball
 brew install <span class="a">paddle-ball</span></code></pre>
       </div>
       <div class="block">
-        <div class="bt">Go</div>
+        <div class="bt">Go <button class="copy" data-copy="go install github.com/subhadeeproy3902/paddle-ball@latest">Copy</button></div>
         <pre><code>go install github.com/subhadeeproy3902/paddle-ball@latest</code></pre>
       </div>
       <div class="block">
-        <div class="bt">Docker</div>
+        <div class="bt">Docker <button class="copy" data-copy="docker run --rm -it ghcr.io/subhadeeproy3902/paddle-ball:latest">Copy</button></div>
         <pre><code>docker run --rm -it ghcr.io/subhadeeproy3902/paddle-ball:latest</code></pre>
       </div>
     </div>
@@ -349,6 +455,33 @@ brew install <span class="a">paddle-ball</span></code></pre>
   </div>
 </section>
 
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Questions</span>
+      <h2>Good to know.</h2>
+    </div>
+    <div class="faq">
+      <details open>
+        <summary>What is paddle-ball?</summary>
+        <p>A free, open-source, minimalist paddleball game that runs entirely in your terminal. It pairs sub-stepped collision physics with a spring-driven paddle you steer with the keyboard or mouse, five restrained themes, four game modes, sound, and a persistent score history.</p>
+      </details>
+      <details>
+        <summary>How do I install it?</summary>
+        <p>On macOS or Linux: <code>curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/paddle-ball/main/install.sh | bash</code>. Or use Homebrew (<code>brew install paddle-ball</code>), Go (<code>go install github.com/subhadeeproy3902/paddle-ball@latest</code>), Docker, or a prebuilt binary from the releases page.</p>
+      </details>
+      <details>
+        <summary>Which operating systems are supported?</summary>
+        <p>Prebuilt binaries ship for macOS, Linux, and Windows on amd64 and arm64, plus <code>.deb</code>, <code>.rpm</code>, and <code>.apk</code> packages and a Docker image. Anything that can run a single Go binary in a UTF-8 terminal works.</p>
+      </details>
+      <details>
+        <summary>Is it free and open source?</summary>
+        <p>Yes — MIT-licensed and free. The full source lives on <a href="https://github.com/subhadeeproy3902/paddle-ball" style="color:var(--accent)">GitHub</a>.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
 <footer>
   <div class="wrap foot-in">
     <p>MIT © 2026 Subhadeep Roy · built with Bubble Tea</p>
@@ -361,15 +494,23 @@ brew install <span class="a">paddle-ball</span></code></pre>
 </footer>
 
 <script>
-  // Copy install command
+  // Copy buttons — hero command + every install block
   (function () {
-    var btn = document.getElementById("copy-btn");
-    var cmd = document.getElementById("install-cmd");
-    btn.addEventListener("click", function () {
-      navigator.clipboard.writeText(cmd.textContent.trim()).then(function () {
-        var old = btn.textContent;
-        btn.textContent = "Copied";
-        setTimeout(function () { btn.textContent = old; }, 1400);
+    function flash(btn) {
+      var old = btn.textContent;
+      btn.textContent = "Copied";
+      btn.classList.add("done");
+      setTimeout(function () { btn.textContent = old; btn.classList.remove("done"); }, 1400);
+    }
+    var hero = document.getElementById("copy-btn");
+    if (hero) {
+      hero.addEventListener("click", function () {
+        navigator.clipboard.writeText(document.getElementById("install-cmd").textContent.trim()).then(function () { flash(hero); });
+      });
+    }
+    document.querySelectorAll(".copy[data-copy]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        navigator.clipboard.writeText(btn.getAttribute("data-copy")).then(function () { flash(btn); });
       });
     });
   })();

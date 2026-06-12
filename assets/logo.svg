@@ -1,0 +1,33 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="paddle-ball logo">
+  <defs>
+    <linearGradient id="tile" x1="48" y1="0" x2="48" y2="96" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#232220"/>
+      <stop offset="1" stop-color="#191816"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#cc785c" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#cc785c" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- tile -->
+  <rect x="0.5" y="0.5" width="95" height="95" rx="22" fill="url(#tile)"/>
+  <rect x="1" y="1" width="94" height="94" rx="21.5" fill="none" stroke="#3a3833" stroke-width="1"/>
+
+  <!-- bounce trajectory: in from the left, off the paddle, out to the upper right -->
+  <path d="M22 30 L43 60 Q48 66 53 60 L74 24"
+        fill="none" stroke="#cc785c" stroke-width="3.2"
+        stroke-linecap="round" stroke-linejoin="round" opacity="0.92"/>
+
+  <!-- fading trail toward the live ball -->
+  <circle cx="68" cy="31.5" r="2.1" fill="#cc785c" opacity="0.45"/>
+  <circle cx="63" cy="38" r="1.8" fill="#cc785c" opacity="0.28"/>
+  <circle cx="58" cy="44.5" r="1.5" fill="#cc785c" opacity="0.16"/>
+
+  <!-- paddle -->
+  <rect x="33" y="66" width="30" height="7" rx="3.5" fill="#cc785c"/>
+
+  <!-- ball -->
+  <circle cx="74" cy="24" r="13" fill="url(#halo)"/>
+  <circle cx="74" cy="24" r="5.4" fill="#faf9f5"/>
+</svg>

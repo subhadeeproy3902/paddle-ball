@@ -1,0 +1,42 @@
+# paddle-ball
+
+> paddle-ball is a free, open-source, minimalist paddleball game that runs in the terminal. It uses sub-stepped collision physics (the ball never tunnels through walls or glitches), a spring-driven paddle controlled by keyboard or mouse, five restrained dark themes, four game modes, terminal-bell sound, and a persistent local score history. It is written in Go and ships as a single binary for macOS, Linux, and Windows.
+
+## About
+
+- Name: paddle-ball
+- Author: Subhadeep Roy (https://github.com/subhadeeproy3902)
+- License: MIT (free and open source)
+- Language: Go, built with the Bubble Tea TUI framework
+- Website: https://paddleball.mvp-subha.me
+- Source: https://github.com/subhadeeproy3902/paddle-ball
+
+## Features
+
+- Sub-stepped continuous collision physics — smooth and glitch-free at any speed
+- Spring-driven paddle, controllable with arrow keys, A/D, or the mouse
+- Five themes: Claude (default), Mono, Nord, Moss, Ember — restrained, single-accent palettes
+- Four modes: Classic (one life), Arcade (lives + power-ups), Zen (endless), Time Trial (60s)
+- Six power-ups and five escalating difficulty phases
+- Persistent JSON score history with an in-game leaderboard
+- Single static binary, zero runtime dependencies
+
+## Install
+
+- macOS / Linux one-liner: `curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/paddle-ball/main/install.sh | bash`
+- Homebrew: `brew install subhadeeproy3902/paddle-ball/paddle-ball`
+- Go: `go install github.com/subhadeeproy3902/paddle-ball@latest`
+- Docker: `docker run --rm -it ghcr.io/subhadeeproy3902/paddle-ball:latest`
+- Binaries, .deb/.rpm/.apk packages, and Windows zip: https://github.com/subhadeeproy3902/paddle-ball/releases
+
+## Controls
+
+- Arrow keys or A/D, or the mouse — move the paddle
+- P or Space — pause; T — cycle theme; M — toggle sound; R — restart; Q — quit
+
+## Links
+
+- [Website](https://paddleball.mvp-subha.me)
+- [GitHub repository](https://github.com/subhadeeproy3902/paddle-ball)
+- [Releases](https://github.com/subhadeeproy3902/paddle-ball/releases)
+- [Setup, Actions & tokens guide](https://github.com/subhadeeproy3902/paddle-ball/blob/main/SETUP.md)

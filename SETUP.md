@@ -106,29 +106,35 @@ from the latest release.
 
 ---
 
-## 6. Optional — turn on Homebrew
+## 6. Homebrew — enabled
 
-1. Create a public repo named **`homebrew-paddle-ball`** under your account.
-2. Create a **classic PAT** with `repo` scope at
-   <https://github.com/settings/tokens> (or a fine-grained token with
-   Contents: read/write on that tap repo).
-3. Add it to *this* repo as a secret named **`HOMEBREW_TOKEN`**
-   (Settings → Secrets and variables → Actions → New repository secret).
-4. In [.goreleaser.yaml](.goreleaser.yaml) set `brews[].skip_upload: false`.
-5. The next tag will push a `Formula/paddle-ball.rb` to the tap, enabling:
-   ```bash
-   brew tap subhadeeproy3902/paddle-ball
-   brew install paddle-ball
-   ```
+The `homebrew-paddle-ball` tap and the `HOMEBREW_TOKEN` secret are configured,
+and `brews[].skip_upload` is `false`, so each `v*` tag pushes an updated
+`Formula/paddle-ball.rb` to the tap. Users install with:
 
-## 7. Optional — Scoop & WinGet (Windows)
+```bash
+brew install subhadeeproy3902/paddle-ball/paddle-ball
+```
 
-The Releases already ship Windows `.zip` binaries, so `go install` and manual
-unzip work today. For one-command installs you can later add:
-- a **Scoop** bucket repo (`scoop-paddle-ball`) with a manifest pointing at the
-  release zip, or a `scoops:` block in GoReleaser, and
-- a **WinGet** manifest submitted to `microsoft/winget-pkgs` (GoReleaser has a
-  `winget:` block for this — both need their own token/PR flow).
+If a release ever fails on the Homebrew step, it means the `HOMEBREW_TOKEN`
+secret is missing or its scope can't push to the tap repo — recreate it as a
+classic PAT with `repo` scope (or a fine-grained token with Contents:
+read/write on `homebrew-paddle-ball`).
+
+## 7. Scoop & WinGet (Windows)
+
+Windows users can already use the prebuilt `.zip`, `go install`, or Docker.
+GoReleaser also **generates Scoop and WinGet manifests** on every release
+(`scoops:` and `winget:` in [.goreleaser.yaml](.goreleaser.yaml)), currently
+with `skip_upload: true` so they're build artifacts and never block a release.
+To make `scoop install` / `winget install` work:
+
+- **Scoop** — create a public **`scoop-paddle-ball`** bucket repo, ensure a
+  token can push to it, and set `scoops[].skip_upload: false`. Then:
+  `scoop bucket add paddle-ball https://github.com/subhadeeproy3902/scoop-paddle-ball; scoop install paddle-ball`.
+- **WinGet** — point `winget[].repository` at your fork of
+  `microsoft/winget-pkgs`, set `skip_upload: false`, and GoReleaser opens the
+  catalog PR (subject to Microsoft's review).
 
 ---
 

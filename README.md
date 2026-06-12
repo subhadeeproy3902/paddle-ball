@@ -1,12 +1,19 @@
-# paddle-ball
+<div align="center">
 
-> A minimalist, physics-based paddleball game for the terminal — sub-stepped
-> collisions that never glitch, a spring-driven paddle (keys or mouse), five
-> restrained themes, four modes, and a persistent score history. One binary.
+<a href="https://paddleball.mvp-subha.me">
+  <img src="assets/banner.svg" alt="paddle-ball — a minimalist, physics-based paddle game for your terminal" width="100%" />
+</a>
 
-[![Go Version](https://img.shields.io/badge/Go-1.21+-555?style=flat&logo=go&logoColor=white)](https://go.dev)
-[![Release](https://img.shields.io/github/v/release/subhadeeproy3902/paddle-ball?style=flat&color=cc785c)](https://github.com/subhadeeproy3902/paddle-ball/releases)
-[![License](https://img.shields.io/badge/license-MIT-a09d96?style=flat)](LICENSE)
+<br />
+
+[![Release](https://img.shields.io/github/v/release/subhadeeproy3902/paddle-ball?style=flat-square&color=cc785c&labelColor=1f1e1b)](https://github.com/subhadeeproy3902/paddle-ball/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/subhadeeproy3902/paddle-ball/release.yml?style=flat-square&label=ci&color=5db8a6&labelColor=1f1e1b)](https://github.com/subhadeeproy3902/paddle-ball/actions)
+[![Go](https://img.shields.io/badge/Go-1.21+-a09d96?style=flat-square&logo=go&logoColor=white&labelColor=1f1e1b)](https://go.dev)
+[![License](https://img.shields.io/badge/license-MIT-a09d96?style=flat-square&labelColor=1f1e1b)](LICENSE)
+
+**[Website](https://paddleball.mvp-subha.me)** · **[Install](#install)** · **[Releases](https://github.com/subhadeeproy3902/paddle-ball/releases)** · **[Controls](#controls)**
+
+</div>
 
 ---
 
@@ -21,6 +28,16 @@
 - **Sound** — restrained terminal-bell feedback on key moments; toggle with `M`.
 - **Score history** — persistent JSON store with an in-game leaderboard, per-mode filters, and lifetime stats.
 - **Single binary** — pure Go, zero runtime dependencies, one-command install.
+
+---
+
+## Gameplay
+
+<div align="center">
+  <img src="assets/screenshot.png" alt="paddle-ball running in a terminal — Arcade mode with score, lives, streak, the ball and its trail, the coral paddle, and an active Fire Paddle power-up" width="820" />
+  <br />
+  <sub>Arcade · Claude theme — an actual rendered frame, not a mockup.</sub>
+</div>
 
 ---
 
@@ -45,12 +62,10 @@ docker run --rm -it ghcr.io/subhadeeproy3902/paddle-ball:latest
 Grab a prebuilt binary, `.deb`/`.rpm`/`.apk`, or the Windows `.zip` from the
 [releases page](https://github.com/subhadeeproy3902/paddle-ball/releases).
 
-### Homebrew
+### Homebrew (macOS / Linux)
 ```bash
-brew tap subhadeeproy3902/paddle-ball
-brew install paddle-ball
+brew install subhadeeproy3902/paddle-ball/paddle-ball
 ```
-> Homebrew requires the tap to be set up first — see [SETUP.md §6](SETUP.md).
 
 ---
 
@@ -135,7 +150,8 @@ paddle-ball/
 │   └── sound.go            Terminal-bell sound effects
 ├── ui/theme.go             Five color themes + lipgloss helpers
 ├── store/store.go          Score + config persistence (atomic JSON)
-├── index.html              Landing page
+├── assets/                 Logo, banner, OG image, screenshot, icons
+├── index.html              Landing page (paddleball.mvp-subha.me)
 ├── .goreleaser.yaml        Cross-compile + publish pipeline
 └── .github/workflows       CI (build/vet/test) + tagged release
 ```
