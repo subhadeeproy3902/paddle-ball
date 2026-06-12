@@ -15,12 +15,12 @@ import (
 )
 
 var (
-	buildVersion string
-	buildCommit  string
-	buildDate    string
+	buildVersion = "dev"
+	buildCommit  = "none"
+	buildDate    = "unknown"
 )
 
-// Execute wires all sub-commands and runs the CLI.
+// Execute wires all sub-commands and runs cobra.
 func Execute(version, commit, date string) {
 	buildVersion = version
 	buildCommit = commit
@@ -28,27 +28,22 @@ func Execute(version, commit, date string) {
 
 	root := &cobra.Command{
 		Use:   "paddle-ball",
-		Short: "🏓 A physics-based terminal paddleball game",
-		Long: lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#00FFFF")).
-			Bold(true).
-			Render("PADDLEBALL") + "\n" +
-			"A neon arcade game that lives in your terminal.\n" +
-			"Smooth physics · Score history · Cross-platform",
-		// No args → launch title screen
+		Short: "🏓 A physics-based neon terminal paddleball game",
+		Long: lipgloss.NewStyle().Foreground(lipgloss.Color("#00FFFF")).Bold(true).
+			Render("PADDLEBALL") +
+			" — vertical arcade paddleball for the terminal.\n" +
+			"Spring physics · Particle effects · Score history · Power-ups",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runGame("", "")
 		},
 	}
 
-	// ---------- play ----------
+	// ── play ─────────────────────────────────────────────────────────────
 	var playMode, playTheme string
 	playCmd := &cobra.Command{
 		Use:   "play",
-		Short: "Start playing right now",
-		Example: `  paddle-ball play
-  paddle-ball play --mode arcade
-  paddle-ball play --mode timed --theme ocean`,
+		Short: "Start a game immediately",
+		Example: "  paddle-ball play\n  paddle-ball play --mode arcade\n  paddle-ball play --mode timed --theme ocean",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runGame(playMode, playTheme)
 		},
@@ -56,10 +51,9 @@ func Execute(version, commit, date string) {
 	playCmd.Flags().StringVarP(&playMode, "mode", "m", "", "Game mode: classic | arcade | zen | timed")
 	playCmd.Flags().StringVarP(&playTheme, "theme", "t", "", "Theme: neon | mono | sunset | ocean")
 
-	// ---------- scores ----------
+	// ── scores ───────────────────────────────────────────────────────────
 	var scoresMode string
-	var scoresAll bool
-	var scoresJSON bool
+	var scoresAll, scoresJSON bool
 	scoresCmd := &cobra.Command{
 		Use:   "scores",
 		Short: "View score history and leaderboard",
@@ -69,13 +63,10 @@ func Execute(version, commit, date string) {
 			if err != nil {
 				return fmt.Errorf("could not load scores: %w", err)
 			}
-
 			if len(records) == 0 {
-				fmt.Println("No scores yet. Play a game first!")
+				fmt.Println("No scores yet. Run `paddle-ball play` first!")
 				return nil
 			}
-
-			// filter
 			if scoresMode != "" {
 				filtered := records[:0]
 				for _, r := range records {
@@ -85,20 +76,15 @@ func Execute(version, commit, date string) {
 				}
 				records = filtered
 			}
-
-			// limit
 			top := records
 			if !scoresAll && len(top) > 10 {
 				top = top[:10]
 			}
-
 			if scoresJSON {
 				enc := json.NewEncoder(os.Stdout)
 				enc.SetIndent("", "  ")
 				return enc.Encode(top)
 			}
-
-			// pretty table
 			style := lipgloss.NewStyle().Foreground(lipgloss.Color("#00FFFF")).Bold(true)
 			fmt.Println(style.Render("🏆  PADDLEBALL — SCORE HISTORY"))
 			fmt.Println()
@@ -108,36 +94,28 @@ func Execute(version, commit, date string) {
 			for i, r := range top {
 				dur := time.Duration(r.DurationSec) * time.Second
 				fmt.Fprintf(w, "%d\t%d\t%s\t×%d\t%s\t%s\n",
-					i+1, r.Score, r.Mode,
-					r.HighStreak,
-					fmtDur(dur),
-					r.Timestamp.Format("Jan 02 '06"),
-				)
+					i+1, r.Score, r.Mode, r.HighStreak,
+					fmtD(dur), r.Timestamp.Format("Jan 02 '06"))
 			}
 			w.Flush()
-
-			// aggregate
 			stats := st.Aggregate(records)
-			fmt.Printf("\nAll-time balls caught: %d  |  Total time: %s  |  Best streak: ×%d\n",
-				stats.TotalCaught, fmtDur(time.Duration(stats.TotalTimeSec)*time.Second), stats.BestStreak)
+			fmt.Printf("\nAll-time: caught %d · played %s · best ×%d\n",
+				stats.TotalCaught, fmtD(time.Duration(stats.TotalTimeSec)*time.Second), stats.BestStreak)
 			return nil
 		},
 	}
 	scoresCmd.Flags().StringVarP(&scoresMode, "mode", "m", "", "Filter by mode: classic | arcade | zen | timed")
-	scoresCmd.Flags().BoolVarP(&scoresAll, "all", "a", false, "Show full history, not just top 10")
+	scoresCmd.Flags().BoolVarP(&scoresAll, "all", "a", false, "Show full history (not just top 10)")
 	scoresCmd.Flags().BoolVar(&scoresJSON, "json", false, "Print raw JSON to stdout")
 
-	// ---------- reset ----------
+	// ── reset ────────────────────────────────────────────────────────────
 	resetCmd := &cobra.Command{
 		Use:   "reset",
-		Short: "Delete all saved scores (with confirmation)",
+		Short: "Delete all saved scores (prompts for confirmation)",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			st := store.New()
-			records, err := st.LoadAll()
-			if err != nil {
-				return err
-			}
-			fmt.Printf("This will permanently delete %d score record(s).\n", len(records))
+			records, _ := st.LoadAll()
+			fmt.Printf("This will permanently delete %d record(s).\n", len(records))
 			fmt.Print("Type YES to confirm: ")
 			var confirm string
 			fmt.Scanln(&confirm)
@@ -153,7 +131,7 @@ func Execute(version, commit, date string) {
 		},
 	}
 
-	// ---------- version ----------
+	// ── version ──────────────────────────────────────────────────────────
 	versionCmd := &cobra.Command{
 		Use:   "version",
 		Short: "Print version info",
@@ -171,17 +149,14 @@ func Execute(version, commit, date string) {
 
 func runGame(mode, theme string) error {
 	m := game.NewModel(mode, theme)
-	p := tea.NewProgram(m,
-		tea.WithAltScreen(),
-		tea.WithMouseCellMotion(),
-	)
+	p := tea.NewProgram(m, tea.WithAltScreen(), tea.WithMouseCellMotion())
 	if _, err := p.Run(); err != nil {
 		return fmt.Errorf("game error: %w", err)
 	}
 	return nil
 }
 
-func fmtDur(d time.Duration) string {
+func fmtD(d time.Duration) string {
 	d = d.Round(time.Second)
 	m := int(d.Minutes())
 	s := int(d.Seconds()) % 60

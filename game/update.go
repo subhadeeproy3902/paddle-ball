@@ -1,33 +1,48 @@
 package game
 
+// update.go — bubbletea Update function.
+// Key handling fix: paddle target is moved DIRECTLY in the key handler.
+// harmonica spring (in physics tick) drives the actual paddle position.
+// No held-key state that gets cleared every frame.
+
 import (
-	"math/rand"
+	"math"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/bubbles/progress"
 	"github.com/subhadeeproy3902/paddle-ball/store"
 )
 
-const numThemes = 4
-
-// Update is the bubbletea update function — the heart of the game.
+// Update is the bubbletea Update function — called for every message.
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+
+	// ── terminal resize ────────────────────────────────────────────────────
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
 		m.recalcPlayArea()
-		if m.phase == PhasePlaying {
-			m.clampPaddle()
-		}
+		m.clampPaddleTarget()
+
+	// ── progress bar animation frames ──────────────────────────────────────
+	case progress.FrameMsg:
+		bar, cmd := m.puBar.Update(msg)
+		m.puBar = bar.(progress.Model)
+		return m, tea.Batch(schedTick(), cmd)
+
+	// ── keyboard ───────────────────────────────────────────────────────────
 	case tea.KeyMsg:
 		if msg.String() == "ctrl+c" {
 			return m, tea.Quit
 		}
 		m = m.handleKey(msg)
+
+	// ── game tick ──────────────────────────────────────────────────────────
 	case TickMsg:
 		m = m.tick(time.Time(msg))
 	}
+
 	return m, schedTick()
 }
 
@@ -36,11 +51,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 func (m Model) handleKey(k tea.KeyMsg) Model {
-	switch m.phase {
+	ks := k.String()
+
+	switch m.appPhase {
+
+	// ── TITLE ──────────────────────────────────────────────────────────────
 	case PhaseTitle:
-		m.keyUp = false
-		m.keyDown = false
-		switch k.String() {
+		switch ks {
 		case "up", "k", "w":
 			m.menuSel = (m.menuSel + 3) % 4
 		case "down", "j", "s":
@@ -49,113 +66,125 @@ func (m Model) handleKey(k tea.KeyMsg) Model {
 			m.mode = GameMode(m.menuSel)
 			m.startCountdown()
 		case "1":
-			m.mode = ModeClassic
-			m.startCountdown()
+			m.mode = ModeClassic; m.startCountdown()
 		case "2":
-			m.mode = ModeArcade
-			m.startCountdown()
+			m.mode = ModeArcade; m.startCountdown()
 		case "3":
-			m.mode = ModeZen
-			m.startCountdown()
+			m.mode = ModeZen; m.startCountdown()
 		case "4":
-			m.mode = ModeTimeTrial
-			m.startCountdown()
-		case "S":
-			m.phase = PhaseLeaderboard
+			m.mode = ModeTimeTrial; m.startCountdown()
+		case "s", "S":
+			m.appPhase = PhaseLeaderboard
 			recs, _ := m.st.LoadAll()
 			m.scores = recs
 		case "t", "T":
-			m.themeIdx = (m.themeIdx + 1) % numThemes
-		case "?", "h":
-			m.phase = PhaseHelp
-		case "q":
-			return m
+			m.cycleTheme()
+		case "?", "h", "H":
+			m.appPhase = PhaseHelp
+		case "q", "Q":
+			// handled by ctrl+c above; q from title goes to quit
 		}
 
+	// ── COUNTDOWN ──────────────────────────────────────────────────────────
 	case PhaseCountdown:
-		switch k.String() {
-		case "q", "esc":
-			m.phase = PhaseTitle
+		switch ks {
+		case "q", "Q", "esc":
+			m.appPhase = PhaseTitle
 		}
 
+	// ── PLAYING ────────────────────────────────────────────────────────────
+	// KEY FIX: We shift paddleTargX directly here. The spring in physics.go
+	// smoothly chases the target every tick. No held-key state cleared.
 	case PhasePlaying:
-		switch k.String() {
-		case "up", "k", "w":
-			m.keyUp = true
-		case "down", "j", "s":
-			m.keyDown = true
-		case "p", " ":
-			m.phase = PhasePaused
+		switch ks {
+		case "left", "a", "A", "h":
+			m.movePaddleTarget(-KeyMoveStep)
+		case "right", "d", "D", "l":
+			m.movePaddleTarget(+KeyMoveStep)
+		case "p", "P", " ":
+			m.appPhase = PhasePaused
 		case "t", "T":
-			m.themeIdx = (m.themeIdx + 1) % numThemes
-		case "q":
-			m.phase = PhaseTitle
-		case "?", "h":
-			m.phase = PhaseHelp
-		}
-		// Release tracking (bubbletea sends key type on every event)
-		switch k.Type {
-		case tea.KeyUp:
-			m.keyUp = true
-		case tea.KeyDown:
-			m.keyDown = true
+			m.cycleTheme()
+		case "?":
+			m.appPhase = PhaseHelp
+		case "q", "Q", "esc":
+			m.appPhase = PhaseTitle
 		}
 
+	// ── PAUSED ─────────────────────────────────────────────────────────────
 	case PhasePaused:
-		m.keyUp = false
-		m.keyDown = false
-		switch k.String() {
-		case "p", " ", "esc":
-			m.phase = PhasePlaying
+		switch ks {
+		case "p", "P", " ", "esc":
+			m.appPhase = PhasePlaying
 			m.lastTick = time.Now()
-		case "r":
+		case "r", "R":
 			m.startCountdown()
-		case "q":
-			m.phase = PhaseTitle
+		case "q", "Q":
+			m.appPhase = PhaseTitle
 		}
 
+	// ── GAME OVER ──────────────────────────────────────────────────────────
 	case PhaseGameOver:
-		switch k.String() {
-		case "r", "enter", " ":
+		switch ks {
+		case "r", "R", "enter", " ":
 			m.startCountdown()
-		case "S":
-			m.phase = PhaseLeaderboard
+		case "s", "S":
+			m.appPhase = PhaseLeaderboard
 			recs, _ := m.st.LoadAll()
 			m.scores = recs
-		case "q", "esc":
-			m.phase = PhaseTitle
+		case "q", "Q", "esc":
+			m.appPhase = PhaseTitle
 		}
 
+	// ── LEADERBOARD ────────────────────────────────────────────────────────
 	case PhaseLeaderboard:
-		switch k.String() {
-		case "q", "esc", "enter":
-			m.phase = PhaseTitle
+		switch ks {
+		case "q", "Q", "esc", "enter":
+			m.appPhase = PhaseTitle
 		case "0":
-			m.lbFilter = ""
-			recs, _ := m.st.LoadAll()
-			m.scores = recs
+			m.lbFilter = ""; m.reloadScores()
 		case "1":
-			m.lbFilter = "classic"
-			m.filterScores()
+			m.lbFilter = "classic"; m.reloadScores()
 		case "2":
-			m.lbFilter = "arcade"
-			m.filterScores()
+			m.lbFilter = "arcade"; m.reloadScores()
 		case "3":
-			m.lbFilter = "zen"
-			m.filterScores()
+			m.lbFilter = "zen"; m.reloadScores()
 		case "4":
-			m.lbFilter = "timed"
-			m.filterScores()
+			m.lbFilter = "timed"; m.reloadScores()
 		}
 
+	// ── HELP ───────────────────────────────────────────────────────────────
 	case PhaseHelp:
-		m.phase = PhaseTitle
+		m.appPhase = PhaseTitle
 	}
 
 	return m
 }
 
-func (m *Model) filterScores() {
+// movePaddleTarget shifts the paddle target by delta, clamping within play area.
+func (m *Model) movePaddleTarget(delta float64) {
+	m.paddleTargX += delta
+	m.clampPaddleTarget()
+	m.lastKeyTime = time.Now()
+	m.paddleDir = math.Copysign(1, delta)
+}
+
+func (m *Model) clampPaddleTarget() {
+	max := float64(m.playW-1) - float64(m.paddleW)
+	if m.paddleTargX < 0 {
+		m.paddleTargX = 0
+	}
+	if m.paddleTargX > max {
+		m.paddleTargX = max
+	}
+}
+
+func (m *Model) cycleTheme() {
+	m.themeIdx = (m.themeIdx + 1) % 4
+	m.st.SaveTheme(m.themeIdx)
+}
+
+func (m *Model) reloadScores() {
 	all, _ := m.st.LoadAll()
 	if m.lbFilter == "" {
 		m.scores = all
@@ -171,11 +200,11 @@ func (m *Model) filterScores() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Tick
+// Tick dispatcher
 // ─────────────────────────────────────────────────────────────────────────────
 
 func (m Model) tick(now time.Time) Model {
-	switch m.phase {
+	switch m.appPhase {
 	case PhaseCountdown:
 		return m.tickCountdown(now)
 	case PhasePlaying:
@@ -191,7 +220,6 @@ func (m Model) tickCountdown(now time.Time) Model {
 	}
 	dt := now.Sub(m.lastTick).Seconds()
 	m.lastTick = now
-
 	m.cdTTL -= dt
 	if m.cdTTL <= 0 {
 		if m.countdown > 0 {
@@ -210,19 +238,17 @@ func (m Model) tickGame(now time.Time) Model {
 		return m
 	}
 	dt := now.Sub(m.lastTick).Seconds()
-	if dt > 0.05 {
-		dt = 0.05
-	}
+	if dt > 0.05 { dt = 0.05 } // cap: prevents physics explosion after alt-tab
 	m.lastTick = now
 	m.elapsed = now.Sub(m.gameStart)
 
-	// Time Trial
+	// Time Trial end
 	if m.mode == ModeTimeTrial && m.elapsed >= m.timeLimit {
 		m.endGame()
 		return m
 	}
 
-	m.updatePaddle(dt)
+	m.stepPaddleSpring(dt)
 	m.updateBall(dt)
 	m.updateParticles(dt)
 	m.updateFloatTexts(dt)
@@ -230,108 +256,76 @@ func (m Model) tickGame(now time.Time) Model {
 	if m.mode == ModeArcade || m.mode == ModeZen {
 		m.updateFallingPUs(dt)
 	}
-	m.updateActivePU(dt)
+	m.stepActivePU(dt)
 
 	if m.bannerTTL > 0 {
 		m.bannerTTL -= dt
 	}
-	if m.paddle.FlashTTL > 0 {
-		m.paddle.FlashTTL -= dt
-		if m.paddle.FlashTTL < 0 {
-			m.paddle.FlashTTL = 0
+	if m.paddleFlash > 0 {
+		m.paddleFlash -= dt
+		if m.paddleFlash < 0 {
+			m.paddleFlash = 0
 		}
 	}
-
-	// Key release each frame (bubbletea doesn't give true key-up events)
-	m.keyUp = false
-	m.keyDown = false
-
 	return m
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Paddle
+// Spring step for paddle (harmonica)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const paddleSpeed = 28.0
+func (m *Model) stepPaddleSpring(dt float64) {
+	prevX := m.paddleX
+	// harmonica.Spring.Update advances the spring by one time-step (1/FPS).
+	// We call it once per game tick (≈1/60s), which matches SpringFreq setup.
+	m.paddleX, m.paddleVX = m.paddleSpring.Update(m.paddleX, m.paddleVX, m.paddleTargX)
 
-func (m *Model) updatePaddle(dt float64) {
-	prev := m.paddle.Y
-	if m.keyUp {
-		m.paddle.Y -= paddleSpeed * dt
-	}
-	if m.keyDown {
-		m.paddle.Y += paddleSpeed * dt
-	}
-	m.clampPaddle()
+	// Record actual velocity for spin transfer
 	if dt > 0 {
-		m.paddle.VY = (m.paddle.Y - prev) / dt
-	}
-}
-
-func (m *Model) clampPaddle() {
-	bottom := float64(m.playH-1) - float64(m.paddle.H)
-	if m.paddle.Y < 1 {
-		m.paddle.Y = 1
-	}
-	if m.paddle.Y > bottom {
-		m.paddle.Y = bottom
-	}
-}
-
-func (m *Model) recalcPlayArea() {
-	m.playH = m.height - 6
-	if m.playH < 10 {
-		m.playH = 10
-	}
-	m.playW = m.width - 4
-	if m.playW < 20 {
-		m.playW = 20
+		m.paddleLastVX = (m.paddleX - prevX) / dt
 	}
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Float texts
+// Float text tick
 // ─────────────────────────────────────────────────────────────────────────────
 
 func (m *Model) updateFloatTexts(dt float64) {
-	alive := m.ftexts[:0]
-	for _, ft := range m.ftexts {
+	alive := m.floatTxts[:0]
+	for _, ft := range m.floatTxts {
 		ft.Life -= ft.Decay * dt
-		ft.Y -= 1.5 * dt
+		ft.Y -= 2.5 * dt // drift upward
 		if ft.Life > 0 {
 			alive = append(alive, ft)
 		}
 	}
-	m.ftexts = alive
+	m.floatTxts = alive
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Active power-up timer
 // ─────────────────────────────────────────────────────────────────────────────
 
-func (m *Model) updateActivePU(dt float64) {
+func (m *Model) stepActivePU(dt float64) {
 	if m.activePU == nil || m.activePU.Total == 0 {
 		return
 	}
 	m.activePU.TTL -= dt
 	if m.activePU.TTL <= 0 {
-		m.expirePowerUp()
+		m.expirePU()
 	}
 }
 
-func (m *Model) expirePowerUp() {
+func (m *Model) expirePU() {
 	if m.activePU == nil {
 		return
 	}
 	switch m.activePU.Kind {
 	case PUWidePaddle:
-		m.paddle.H -= 3
-		if m.paddle.H < m.curPhase.PaddleH {
-			m.paddle.H = m.curPhase.PaddleH
+		m.paddleW -= 3
+		if m.paddleW < m.curPhase.PaddleW {
+			m.paddleW = m.curPhase.PaddleW
 		}
-	case PUBomb:
-		// effect was at activation, nothing to undo
 	}
 	m.activePU = nil
 }
@@ -340,48 +334,63 @@ func (m *Model) expirePowerUp() {
 // Falling power-ups
 // ─────────────────────────────────────────────────────────────────────────────
 
-const puFallSpeed = 7.0
-
 func (m *Model) updateFallingPUs(dt float64) {
 	alive := m.fallingPUs[:0]
-	for i := range m.fallingPUs {
-		pu := m.fallingPUs[i]
+	for _, pu := range m.fallingPUs {
 		pu.Y += pu.VY * dt
-		pu.FrameTTL -= dt
-		if pu.FrameTTL <= 0 {
-			pu.Frame = (pu.Frame + 1) % 3
-			pu.FrameTTL = 0.15
+		pu.AnimTTL -= dt
+		if pu.AnimTTL <= 0 {
+			pu.AnimStep = math.Mod(pu.AnimStep+1, 3)
+			pu.AnimTTL = 0.2
 		}
 
+		// Caught by the paddle?
 		px := int(pu.X + 0.5)
 		py := int(pu.Y + 0.5)
-		if px == PaddleX &&
-			py >= int(m.paddle.Y) && py < int(m.paddle.Y)+m.paddle.H {
-			m.activatePowerUp(pu.Kind)
+		paddleRow := m.playH - PaddleRow
+		if py >= paddleRow-1 && py <= paddleRow+1 &&
+			px >= int(m.paddleX) && px < int(m.paddleX)+m.paddleW {
+			m.activatePU(pu.Kind)
 			continue
 		}
 		if pu.Y >= float64(m.playH) {
-			continue
+			continue // gone off-screen
 		}
 		alive = append(alive, pu)
 	}
 	m.fallingPUs = alive
 }
 
-func (m *Model) activatePowerUp(kind PowerUpKind) {
+func (m *Model) spawnPU() {
+	kinds := []PowerUpKind{PUWidePaddle, PUSlowMo, PUFirePaddle, PUIronShield, PUGhost}
+	kind := kinds[randN(len(kinds))]
+	if randF() < 0.15 {
+		kind = PUBomb
+	}
+	xMax := m.playW - 4
+	if xMax < 2 {
+		xMax = 2
+	}
+	x := float64(2 + randN(xMax-2))
+	m.fallingPUs = append(m.fallingPUs, FallingPU{
+		X: x, Y: 1.0, Kind: kind, VY: 6.0, AnimTTL: 0.2,
+	})
+}
+
+func (m *Model) activatePU(kind PowerUpKind) {
 	if m.activePU != nil {
-		m.expirePowerUp()
+		m.expirePU()
 	}
 	dur := kind.Duration()
 	m.activePU = &ActivePU{Kind: kind, TTL: dur, Total: dur}
 
 	switch kind {
 	case PUWidePaddle:
-		m.paddle.H += 3
+		m.paddleW += 3
 	case PUBomb:
-		m.paddle.H -= 2
-		if m.paddle.H < 2 {
-			m.paddle.H = 2
+		m.paddleW -= 2
+		if m.paddleW < 3 {
+			m.paddleW = 3
 		}
 		m.activePU.Total = 10
 		m.activePU.TTL = 10
@@ -393,35 +402,30 @@ func (m *Model) activatePowerUp(kind PowerUpKind) {
 		m.activePU.Total = 0
 	}
 
-	m.ftexts = append(m.ftexts, FloatText{
-		X:     float64(PaddleX + 3),
-		Y:     m.paddle.Y,
+	m.floatTxts = append(m.floatTxts, FloatText{
+		X: m.paddleX + float64(m.paddleW)/2 - 4,
+		Y: float64(m.playH - PaddleRow - 2),
 		Text:  kind.Name(),
 		Color: kind.Color(),
-		Life:  1.0,
-		Decay: 0.7,
+		Life:  1.0, Decay: 0.7,
 	})
 }
 
-func (m *Model) spawnPowerUp() {
-	kinds := []PowerUpKind{PUWidePaddle, PUSlowMo, PUFirePaddle, PUIronShield, PUGhost}
-	kind := kinds[rand.Intn(len(kinds))]
-	if rand.Float64() < 0.15 {
-		kind = PUBomb
+// ─────────────────────────────────────────────────────────────────────────────
+// Resize helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+func (m *Model) recalcPlayArea() {
+	// Header: 2 rows, footer: 2 rows, borders: 2 rows
+	m.playH = m.height - 6
+	if m.playH < 12 {
+		m.playH = 12
 	}
-	xMin := PaddleX + 4
-	xMax := m.playW - 3
-	if xMax <= xMin {
-		xMax = xMin + 1
+	// Left/right borders: 2 cols
+	m.playW = m.width - 2
+	if m.playW < 30 {
+		m.playW = 30
 	}
-	x := float64(xMin + rand.Intn(xMax-xMin))
-	m.fallingPUs = append(m.fallingPUs, FallingPU{
-		X:        x,
-		Y:        1.0,
-		Kind:     kind,
-		VY:       puFallSpeed,
-		FrameTTL: 0.15,
-	})
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -429,10 +433,10 @@ func (m *Model) spawnPowerUp() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 func (m *Model) endGame() {
-	m.phase = PhaseGameOver
+	m.appPhase = PhaseGameOver
 	m.spawnExplosion()
-	m.st.Save(store.ScoreRecord{
-		Mode:        m.mode.ShortCode(),
+	_ = m.st.Save(store.ScoreRecord{
+		Mode:        m.mode.Code(),
 		Score:       m.score,
 		HighStreak:  m.maxStreak,
 		BallsCaught: m.catches,
@@ -446,3 +450,10 @@ func (m *Model) endGame() {
 		m.hiScore = m.score
 	}
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Small random helpers (avoids dot-importing math/rand everywhere)
+// ─────────────────────────────────────────────────────────────────────────────
+
+func randN(n int) int     { return rand.Intn(n) }
+func randF() float64      { return rand.Float64() }

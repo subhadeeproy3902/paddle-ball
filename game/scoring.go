@@ -13,12 +13,10 @@ func (m *Model) scoreHit(edgeHit bool) {
 		m.maxStreak = m.streak
 	}
 
-	// Base points
 	pts := 1
 	if edgeHit {
-		pts += 2
+		pts += 2 // edge bonus
 	}
-
 	// Phase bonus
 	switch m.curPhase.Num {
 	case 4:
@@ -27,47 +25,43 @@ func (m *Model) scoreHit(edgeHit bool) {
 		pts += 4
 	}
 
-	// Streak multiplier
-	mult := m.streakMultiplier()
-
-	// Fire paddle power-up multiplier
+	mult := m.streakMult()
 	if m.activePU != nil && m.activePU.Kind == PUFirePaddle {
-		mult *= 2.0
+		mult *= 2.0 // fire paddle: double score
 	}
 
-	earned := int(float64(pts) * mult)
+	earned := int(math.Round(float64(pts) * mult))
+
+	// Rally milestone bonuses
+	bonus := 0
+	switch m.streak {
+	case 50:
+		bonus = 25
+	case 100:
+		bonus = 75
+	case 200:
+		bonus = 200
+	}
+	earned += bonus
 	m.score += earned
 
-	// Rally bonus milestones
-	bonus := 0
-	if m.streak == 50 {
-		bonus = 25
-	} else if m.streak == 100 {
-		bonus = 75
-	}
-	if bonus > 0 {
-		m.score += bonus
-		earned += bonus
-	}
-
-	// Float text
+	// Floating score label
 	label := fmt.Sprintf("+%d", earned)
-	color := scoreColor(earned)
 	if mult > 1.0 {
 		label += fmt.Sprintf(" ×%.1g", mult)
 	}
-	m.ftexts = append(m.ftexts, FloatText{
-		X:     float64(PaddleX + 3),
-		Y:     m.paddle.Y + float64(m.paddle.H/2),
+	m.floatTxts = append(m.floatTxts, FloatText{
+		X:     m.paddleX + float64(m.paddleW)/2 - float64(len(label))/2,
+		Y:     float64(m.paddleRowY() - 1),
 		Text:  label,
-		Color: color,
+		Color: scoreColor(earned),
 		Life:  1.0,
-		Decay: 1.2,
+		Decay: 1.3,
 	})
 }
 
-// streakMultiplier returns the current score multiplier based on streak length.
-func (m *Model) streakMultiplier() float64 {
+// streakMult returns the current score multiplier based on streak length.
+func (m *Model) streakMult() float64 {
 	switch {
 	case m.streak >= 35:
 		return 3.0
@@ -80,36 +74,31 @@ func (m *Model) streakMultiplier() float64 {
 	}
 }
 
-// checkPhaseTransition upgrades difficulty when the score crosses a threshold.
+// checkPhaseTransition upgrades difficulty when score crosses a threshold.
 func (m *Model) checkPhaseTransition() {
-	newPhase := PhaseForScore(m.score)
-	if newPhase.Num > m.curPhase.Num {
-		old := m.curPhase
-		m.curPhase = newPhase
-		m.paddle.H = newPhase.PaddleH
-		_ = old
+	np := PhaseForScore(m.score)
+	if np.Num > m.curPhase.Num {
+		m.curPhase = np
+		m.paddleW = np.PaddleW
+		// Clamp paddle position after size change
+		m.clampPaddleTarget()
 
-		m.bannerText = fmt.Sprintf("  %s  PHASE %d — %s  %s  ",
-			newPhase.Emoji, newPhase.Num, newPhase.Name, newPhase.Emoji)
-		m.bannerColor = newPhase.Color
-		m.bannerTTL = 1.8
-
-		// Bump ball speed
-		speed := BaseSpeed * newPhase.SpeedMult
-		curr := magnitude(m.ball.VX, m.ball.VY)
+		// Speed-bump the ball to the new phase speed
+		speed := BaseSpeed * np.SpeedMult
+		curr := math.Sqrt(m.ball.VX*m.ball.VX + m.ball.VY*m.ball.VY)
 		if curr > 0 {
 			m.ball.VX = m.ball.VX / curr * speed
 			m.ball.VY = m.ball.VY / curr * speed
 		}
+
+		m.bannerText = fmt.Sprintf("  %s  PHASE %d — %s  %s  ",
+			np.Emoji, np.Num, np.Name, np.Emoji)
+		m.bannerColor = np.Color
+		m.bannerTTL = 1.8
 	}
 }
 
-// magnitude returns the Euclidean magnitude of a 2D vector.
-func magnitude(vx, vy float64) float64 {
-	return math.Sqrt(vx*vx + vy*vy)
-}
-
-// RankForScore returns a rank title for a final score.
+// RankForScore returns a display rank and accent colour for a final score.
 func RankForScore(score int) (string, string) {
 	switch {
 	case score >= 500:
