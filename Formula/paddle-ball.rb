@@ -5,21 +5,21 @@
 class PaddleBall < Formula
   desc "A minimalist physics-based terminal paddleball game with score history"
   homepage "https://paddleball.mvp-subha.me"
-  version "1.0.3"
+  version "1.0.4"
   license "MIT"
 
   on_macos do
     if Hardware::CPU.intel?
-      url "https://github.com/subhadeeproy3902/paddle-ball/releases/download/v1.0.3/paddle-ball_darwin_amd64.tar.gz"
-      sha256 "d1fdcad9513c48ecb208f550a16483beb46bbb49bbda4c8b2290785f347a729b"
+      url "https://github.com/subhadeeproy3902/paddle-ball/releases/download/v1.0.4/paddle-ball_darwin_amd64.tar.gz"
+      sha256 "31d6a413b1a20d04be489e41371b72f11b85448923442bc462ec7c166a3798bf"
 
       define_method(:install) do
         bin.install "paddle-ball"
       end
     end
     if Hardware::CPU.arm?
-      url "https://github.com/subhadeeproy3902/paddle-ball/releases/download/v1.0.3/paddle-ball_darwin_arm64.tar.gz"
-      sha256 "3870ea611deae13db02ae2e84d93316f88bf1a8388dfc9fb68341210224d5716"
+      url "https://github.com/subhadeeproy3902/paddle-ball/releases/download/v1.0.4/paddle-ball_darwin_arm64.tar.gz"
+      sha256 "dcc0e21d9d4a11354763491bf0159bff405e57227c8aeed874911910b8094f1e"
 
       define_method(:install) do
         bin.install "paddle-ball"
@@ -29,15 +29,15 @@ class PaddleBall < Formula
 
   on_linux do
     if Hardware::CPU.intel? && Hardware::CPU.is_64_bit?
-      url "https://github.com/subhadeeproy3902/paddle-ball/releases/download/v1.0.3/paddle-ball_linux_amd64.tar.gz"
-      sha256 "f09b14332a0f92e4aaa48ad1a4a16c5f2061bbd08d88469f5862454af87f1e1c"
+      url "https://github.com/subhadeeproy3902/paddle-ball/releases/download/v1.0.4/paddle-ball_linux_amd64.tar.gz"
+      sha256 "5f38ed045376c1a9eaad4856acee2efc8480fe7154084828e90e6c294ad2457d"
       define_method(:install) do
         bin.install "paddle-ball"
       end
     end
     if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
-      url "https://github.com/subhadeeproy3902/paddle-ball/releases/download/v1.0.3/paddle-ball_linux_arm64.tar.gz"
-      sha256 "c6cf99a64988c5e7e83a40ffe25f949a19e2ff426292ca78f7bcf45e333f0f44"
+      url "https://github.com/subhadeeproy3902/paddle-ball/releases/download/v1.0.4/paddle-ball_linux_arm64.tar.gz"
+      sha256 "fc50345f937f6961265ed5a519195e786b61f3d7aa7dea26849e9093d3c76186"
       define_method(:install) do
         bin.install "paddle-ball"
       end
