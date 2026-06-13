@@ -232,6 +232,20 @@
   .shot img { width: 100%; height: auto; display: block; border-radius: 14px; border: 1px solid var(--hairline); }
   .shot figcaption { margin-top: 16px; color: var(--faint); font-size: 13.5px; font-family: var(--mono); text-align: center; }
 
+  /* ── sound showcase ── */
+  .sounds { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  .sfx {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    padding: 26px 12px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; color: var(--muted); font-family: var(--sans); font-size: 14px;
+    cursor: pointer; transition: border-color 0.15s, color 0.15s;
+  }
+  .sfx i { font-style: normal; font-size: 22px; color: var(--accent); transition: transform 0.15s; }
+  .sfx:hover { border-color: var(--accent); color: var(--text); }
+  .sfx:hover i { transform: scale(1.18); }
+  .sfx.playing i { animation: pulse 0.4s ease; }
+  @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
+
   /* ── install ── */
   .install-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
   .block { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--surface); }
@@ -276,6 +290,7 @@
     h1 { font-size: 44px; }
     .features { grid-template-columns: 1fr; }
     .modes, .install-grid, .keys { grid-template-columns: 1fr; }
+    .sounds { grid-template-columns: repeat(3, 1fr); }
     .nav-links a:not(.gh) { display: none; }
   }
 </style>
@@ -286,8 +301,8 @@
   <div class="nav-in">
     <a class="brand" href="#top"><img class="mark" src="/assets/logo.svg" alt="paddle-ball logo" width="26" height="26" /> paddle-ball</a>
     <div class="nav-links">
+      <a href="#sound">Sound</a>
       <a href="#features">Features</a>
-      <a href="#modes">Modes</a>
       <a href="#install">Install</a>
       <a class="gh" href="https://github.com/subhadeeproy3902/paddle-ball">GitHub ↗</a>
     </div>
@@ -377,10 +392,28 @@
       <p>An actual frame from Arcade mode — live HUD, a power-up timer, the ball's trail, and the coral paddle. Rendered, not mocked.</p>
     </div>
     <figure class="shot">
-      <img src="/assets/screenshot.png" width="1900" height="1360" loading="lazy"
+      <img src="/assets/screenshot.png" width="1900" height="1120" loading="lazy"
         alt="paddle-ball running in a terminal: Arcade mode showing score 128, phase 4 Blazing, three lives, a 17 streak, the ball and its trail, the coral paddle, and an active Fire Paddle power-up." />
       <figcaption>paddle-ball · Arcade · Claude theme</figcaption>
     </figure>
+  </div>
+</section>
+
+<section id="sound">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Hear it</span>
+      <h2>The actual game sounds.</h2>
+      <p>Every effect is from <a href="https://soundcn.xyz" style="color:var(--accent)">soundcn</a> — the same files the terminal game plays. Tap to listen.</p>
+    </div>
+    <div class="sounds">
+      <button class="sfx" data-sfx="coin-collect"><i>♪</i>Catch</button>
+      <button class="sfx" data-sfx="power-up-3"><i>♪</i>Power-up</button>
+      <button class="sfx" data-sfx="phase-jump-1"><i>♪</i>Phase up</button>
+      <button class="sfx" data-sfx="arcade-mode"><i>♪</i>New best</button>
+      <button class="sfx" data-sfx="phaser-down-2"><i>♪</i>Ball out</button>
+      <button class="sfx" data-sfx="explosion-crunch-002"><i>♪</i>Game over</button>
+    </div>
   </div>
 </section>
 
@@ -484,7 +517,7 @@ brew install <span class="a">paddle-ball</span></code></pre>
 
 <footer>
   <div class="wrap foot-in">
-    <p>MIT © 2026 Subhadeep Roy · built with Bubble Tea</p>
+    <p>MIT © 2026 Subhadeep Roy · built with Bubble Tea · sounds by soundcn</p>
     <div class="foot-links">
       <a href="https://github.com/subhadeeproy3902/paddle-ball">GitHub</a>
       <a href="https://twitter.com/mvp_Subha">Twitter</a>
@@ -511,6 +544,23 @@ brew install <span class="a">paddle-ball</span></code></pre>
     document.querySelectorAll(".copy[data-copy]").forEach(function (btn) {
       btn.addEventListener("click", function () {
         navigator.clipboard.writeText(btn.getAttribute("data-copy")).then(function () { flash(btn); });
+      });
+    });
+  })();
+
+  // soundcn preview — plays the same MP3s the terminal game uses.
+  (function () {
+    var cache = {};
+    document.querySelectorAll(".sfx[data-sfx]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var name = btn.getAttribute("data-sfx");
+        var a = cache[name] || (cache[name] = new Audio("/assets/sounds/" + name + ".mp3"));
+        a.currentTime = 0;
+        a.volume = 0.6;
+        a.play().catch(function () {});
+        btn.classList.remove("playing");
+        void btn.offsetWidth; // restart the pulse animation
+        btn.classList.add("playing");
       });
     });
   })();
