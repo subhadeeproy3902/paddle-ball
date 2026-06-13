@@ -43,9 +43,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m = m.handleKey(msg)
 		return m, nil
 
-	// ── mouse: paddle follows the cursor while playing ─────────────────────
+	// ── mouse: paddle follows a deliberate LEFT-drag while playing ─────────
+	//   Gated to a held left button so a stray wheel scroll, hover, or
+	//   click-release never yanks the paddle. Keyboard control stays precise.
 	case tea.MouseMsg:
-		if m.appPhase == PhasePlaying {
+		if m.appPhase == PhasePlaying &&
+			msg.Button == tea.MouseButtonLeft &&
+			(msg.Action == tea.MouseActionPress || msg.Action == tea.MouseActionMotion) {
 			m.setPaddleCenter(float64(msg.X))
 		}
 		return m, nil
@@ -386,10 +390,19 @@ func (m Model) tickGame(now time.Time) Model {
 func (m *Model) stepPaddleSpring(dt float64) {
 	prevX := m.paddleX
 	// harmonica.Spring.Update advances the spring by one time-step (1/FPS).
-	// We call it once per game tick (≈1/60s), which matches SpringFreq setup.
+	// Critically damped (SpringDamp = 1.0): the paddle glides to the target and
+	// STOPS — no overshoot, no jelly-wobble after the key is released.
 	m.paddleX, m.paddleVX = m.paddleSpring.Update(m.paddleX, m.paddleVX, m.paddleTargX)
 
-	// Record actual velocity for spin transfer
+	// Snap-and-settle: once we're within a fraction of a cell and barely moving,
+	// pin to the target and zero the velocity. Kills any perpetual micro-tail or
+	// sub-pixel jitter so the paddle is dead still when no key is pressed.
+	if math.Abs(m.paddleX-m.paddleTargX) < 0.08 && math.Abs(m.paddleVX) < 0.5 {
+		m.paddleX = m.paddleTargX
+		m.paddleVX = 0
+	}
+
+	// Record actual velocity for spin transfer.
 	if dt > 0 {
 		m.paddleLastVX = (m.paddleX - prevX) / dt
 	}

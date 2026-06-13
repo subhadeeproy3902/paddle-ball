@@ -29,8 +29,8 @@ const (
 	BaseSpeed       = 21.0 // cells/second at Phase 1
 	KeyMoveStep     = 4.0  // paddle target cells per key event
 	PaddleRow       = 3    // rows from bottom of play area
-	SpringFreq      = 26.0 // harmonica angular frequency (snappier chase)
-	SpringDamp      = 0.72 // harmonica damping ratio (< 1 = a touch of overshoot)
+	SpringFreq      = 30.0 // harmonica angular frequency (responsive chase)
+	SpringDamp      = 1.0  // harmonica damping ratio (1.0 = critically damped: smooth glide, NO overshoot/wobble)
 	PUCatchInterval = 7    // catches between power-up spawns (Arcade/Zen)
 	HitBellGap      = 0.11 // min seconds between paddle-hit beeps (anti-machine-gun)
 	MaxSubSteps     = 16   // physics sub-steps cap per frame (continuous collision)

@@ -25,7 +25,7 @@
 - **Four modes** — Classic, Arcade (lives + power-ups), Zen, and Time Trial.
 - **Six power-ups** — Wide Paddle, Slow Mo, Fire Paddle, Iron Shield, Ghost Ball, Bomb (Arcade / Zen).
 - **Five difficulty phases** — auto-escalating by score, Warm Up → Insane.
-- **Sound** — restrained terminal-bell feedback on key moments; toggle with `M`.
+- **Real sound** — crisp arcade SFX from [soundcn](https://soundcn.xyz), embedded in the binary and played CGO-free (MCI on Windows, native players elsewhere); toggle with `M`.
 - **Score history** — persistent JSON store with an in-game leaderboard, per-mode filters, and lifetime stats.
 - **Single binary** — pure Go, zero runtime dependencies, one-command install.
 
@@ -59,7 +59,7 @@ irm https://raw.githubusercontent.com/subhadeeproy3902/paddle-ball/main/install.
 scoop install https://raw.githubusercontent.com/subhadeeproy3902/paddle-ball/main/bucket/paddle-ball.json
 
 # WinGet — manifests live in this repo's manifests/ folder (use the version dir)
-winget install --manifest manifests/s/subhadeeproy3902/paddle-ball/1.0.3
+winget install --manifest manifests/s/subhadeeproy3902/paddle-ball/1.0.4
 ```
 
 ### Any platform
@@ -96,7 +96,7 @@ paddle-ball version             # version info
 | Key | Action |
 |---|---|
 | `←` `→` / `A` `D` | Move the paddle |
-| mouse | Paddle follows the cursor |
+| drag mouse | Hold the left button to move the paddle |
 | `P` / `Space` | Pause / resume |
 | `T` | Cycle color theme |
 | `M` | Toggle sound |
@@ -153,7 +153,8 @@ paddle-ball/
 │   ├── physics_test.go     Collision regression tests
 │   ├── particles.go        Restrained particle system
 │   ├── scoring.go          Points, streaks, phase transitions
-│   └── sound.go            Terminal-bell sound effects
+│   ├── sound.go            Sound-effect events + throttling
+│   └── audio*.go            Embedded MP3s + CGO-free playback backends
 ├── ui/theme.go             Five color themes + lipgloss helpers
 ├── store/store.go          Score + config persistence (atomic JSON)
 ├── assets/                 Logo, banner, OG image, screenshot, icons

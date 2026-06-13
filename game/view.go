@@ -64,21 +64,11 @@ func (m Model) viewTooSmall(t *ui.Theme) string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 func (m Model) viewTitle(t *ui.Theme) string {
-	// Big gradient figlet wordmark when there's vertical room; a compact motif
-	// on short terminals.
-	var logo string
-	if m.height >= 30 {
-		off := float64(m.titleFrame) * 0.012
-		paddle := gradientArt(titlePaddle, t.Accent, t.Phase[4], off)
-		ball := gradientArt(titleBall, t.Accent, t.Phase[4], off+0.18)
-		logo = lipgloss.JoinVertical(lipgloss.Center, paddle, ball)
-	} else {
-		motif := ui.SB(t.Ball).Render("        ●") + "\n\n" +
-			ui.SB(t.Paddle).Render("   ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬")
-		logo = lipgloss.JoinVertical(lipgloss.Center, motif, "",
-			ui.SB(t.Text).Render(spaced("PADDLEBALL")))
-	}
-	tagline := ui.S(t.Faint).Render(spaced("A TERMINAL PADDLE GAME"))
+	// Compact one-line gradient wordmark, gently shimmering over time.
+	off := float64(m.titleFrame) * 0.012
+	logo := gradientArt(titleWordmark, t.Accent, t.Phase[4], off)
+
+	tagline := ui.S(t.Faint).Render("a minimalist, physics-based paddle game for your terminal")
 
 	modes := []struct{ label, desc string }{
 		{"Classic", "one life · pure score chase"},
@@ -87,33 +77,47 @@ func (m Model) viewTitle(t *ui.Theme) string {
 		{"Time Trial", "sixty-second sprint"},
 	}
 
+	// Menu: a single left-aligned block (marker · number · name · description),
+	// centred on the page so every row shares a clean left edge.
 	var menu strings.Builder
 	for i, mo := range modes {
-		marker := "  "
-		label := ui.S(t.Muted).Render(fmt.Sprintf("%-11s", mo.label))
-		desc := ui.S(t.Faint).Render(mo.desc)
-		if i == m.menuSel {
-			marker = ui.SB(t.Accent).Render("▸ ")
-			label = ui.SB(t.Accent).Render(fmt.Sprintf("%-11s", mo.label))
-			desc = ui.S(t.Muted).Render(mo.desc)
+		sel := i == m.menuSel
+		mark := "  "
+		numCol, nameStyle, descCol := t.Faint, ui.S(t.Muted), t.Faint
+		if sel {
+			mark = ui.SB(t.Accent).Render("▸ ")
+			numCol, nameStyle, descCol = t.Accent, ui.SB(t.Accent), t.Muted
 		}
-		menu.WriteString(marker + label + "  " + desc + "\n")
+		row := mark +
+			ui.S(numCol).Render(fmt.Sprintf("%d", i+1)) + "  " +
+			nameStyle.Render(fmt.Sprintf("%-11s", mo.label)) +
+			ui.S(descCol).Render(mo.desc)
+		menu.WriteString(row + "\n")
 	}
-	// Left-align the menu as one fixed-width block so every row shares a left
-	// edge once the block is centred on the page.
-	menuBlock := lipgloss.NewStyle().Width(44).Align(lipgloss.Left).
+	menuBlock := lipgloss.NewStyle().Width(46).Align(lipgloss.Left).
 		Render(strings.TrimRight(menu.String(), "\n"))
 
 	hint := ui.S(t.Faint).Render(
-		"↑↓ select   ⏎ start   S scores   T theme   M sound   ? help")
+		"↑↓ select   ⏎ start   1-4 quick   S scores   T theme   M sound   ? help")
 
-	status := ui.S(t.Muted).Render(fmt.Sprintf("best %d", m.hiScore)) +
-		ui.S(t.Faint).Render("    theme "+t.Name+"    sound "+onOff(m.soundOn))
+	dot := ui.S(t.Faint).Render("   ·   ")
+	status := ui.S(t.Muted).Render(fmt.Sprintf("best %d", m.hiScore)) + dot +
+		ui.S(t.Muted).Render(t.Name+" theme") + dot +
+		ui.S(t.Muted).Render("sound "+onOff(m.soundOn))
 
 	body := lipgloss.JoinVertical(lipgloss.Center,
-		logo, "", tagline, "", "",
+		logo,
+		"",
+		tagline,
+		"",
+		"",
 		menuBlock,
-		"", hint, "", status)
+		"",
+		"",
+		hint,
+		"",
+		status,
+	)
 
 	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, body)
 }
@@ -496,7 +500,7 @@ func (m Model) viewHelp(t *ui.Theme) string {
 	}
 	content := ui.SB(t.Text).Render(spaced("HOW TO PLAY")) + "\n\n" +
 		c("← → / A D", "move the paddle") +
-		c("mouse", "paddle follows the cursor") +
+		c("drag mouse", "hold left button to move") +
 		c("P / Space", "pause and resume") +
 		c("T", "cycle color theme") +
 		c("M", "toggle sound") +
