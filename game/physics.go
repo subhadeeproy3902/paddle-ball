@@ -174,8 +174,8 @@ func (m *Model) resolvePaddleHit(bx float64, by *float64) {
 	m.scoreHit(isEdge)
 	m.checkPhaseTransition()
 
-	// Power-up cadence (Arcade / Zen)
-	if m.mode == ModeArcade || m.mode == ModeZen {
+	// Power-up cadence (Arcade)
+	if m.mode == ModeArcade {
 		m.catchesSinceLastPU++
 		if m.catchesSinceLastPU >= PUCatchInterval {
 			m.catchesSinceLastPU = 0
@@ -204,27 +204,24 @@ func (m *Model) handleMiss() {
 	m.requestSfx(SfxMiss)
 
 	switch m.mode {
-	case ModeZen:
-		// Infinite play — never yank the ball back to centre unasked. Ask.
-		m.enterBallLost(true, "Ball out", 0)
 	case ModeTimeTrial:
 		// Blitz — brief, visible resume so it never just teleports to centre.
-		m.enterBallLost(false, "Ball out", 2)
+		m.enterBallLost("Ball out", 2)
 	default: // Classic, Arcade
 		m.lives--
 		if m.lives <= 0 {
 			m.endGame()
 		} else {
-			m.enterBallLost(false, "You lost a ball", 3)
+			m.enterBallLost("You lost a ball", 3)
 		}
 	}
 }
 
-// enterBallLost pauses play and shows the ball-lost modal. choice=true waits for
-// the player (Zen); otherwise it auto-resumes after a count of `count`.
-func (m *Model) enterBallLost(choice bool, msg string, count int) {
+// enterBallLost pauses the ball and starts the auto-resume countdown. The play
+// field stays live (paddle controllable) until the ball is re-served after a
+// count of `count`.
+func (m *Model) enterBallLost(msg string, count int) {
 	m.appPhase = PhaseBallLost
-	m.lostChoice = choice
 	m.lostMsg = msg
 	m.resumeCount = count
 	m.resumeTTL = 0.85
@@ -239,12 +236,14 @@ func (m *Model) resumeGame() {
 	m.requestSfx(SfxStart)
 }
 
-// resetBallOnly re-serves the ball from the top without touching paddle or score.
+// resetBallOnly re-serves the ball from the top WITHOUT touching paddle or
+// score. It serves directly above the paddle's current position with a gentle
+// angle, so the resumed rally is always reachable — never an instant loss.
 func (m *Model) resetBallOnly() {
 	speed := BaseSpeed * m.curPhase.SpeedMult
-	angle := (rand.Float64() - 0.5) * math.Pi / 2.5
+	angle := (rand.Float64() - 0.5) * math.Pi / 6 // ±30°, kept narrow so it stays near the paddle
 	m.ball = Ball{
-		X:  float64(m.playW) / 2,
+		X:  m.paddleX + float64(m.paddleW)/2,
 		Y:  float64(m.playH) / 3,
 		VX: speed * math.Sin(angle),
 		VY: speed * math.Cos(angle),

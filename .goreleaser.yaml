@@ -64,7 +64,9 @@ brews:
   - name: pong-ball
     # Self-hosted tap: the formula lives in THIS repo's Formula/ folder. The
     # automatic GITHUB_TOKEN can write to the same repo, so no PAT or separate
-    # tap repo is needed. Install: brew install <raw Formula URL>.
+    # tap repo is needed. Install:
+    #   brew tap subhadeeproy3902/pong-ball https://github.com/subhadeeproy3902/pong-ball
+    #   brew install subhadeeproy3902/pong-ball/pong-ball
     repository:
       owner: subhadeeproy3902
       name: pong-ball
@@ -132,7 +134,7 @@ winget:
     license: MIT
     homepage: "https://pongball.mvp-subha.me"
     short_description: "A minimalist physics-based terminal Pong game"
-    description: "Physics-based Pong for the terminal — sub-stepped collisions, a spring-driven paddle, five themes, four modes, and a persistent score history."
+    description: "Physics-based Pong for the terminal — sub-stepped collisions, a spring-driven paddle, five themes, three modes, and a persistent score history."
     repository:
       owner: subhadeeproy3902
       name: pong-ball

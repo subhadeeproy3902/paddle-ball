@@ -76,9 +76,9 @@ func (m Model) handleKey(k tea.KeyMsg) Model {
 	case PhaseTitle:
 		switch ks {
 		case "up", "k", "w":
-			m.menuSel = (m.menuSel + 3) % 4
+			m.menuSel = (m.menuSel + 2) % 3
 		case "down", "j":
-			m.menuSel = (m.menuSel + 1) % 4
+			m.menuSel = (m.menuSel + 1) % 3
 		case "enter", " ":
 			m.mode = GameMode(m.menuSel)
 			m.startCountdown()
@@ -89,9 +89,6 @@ func (m Model) handleKey(k tea.KeyMsg) Model {
 			m.mode = ModeArcade
 			m.startCountdown()
 		case "3":
-			m.mode = ModeZen
-			m.startCountdown()
-		case "4":
 			m.mode = ModeTimeTrial
 			m.startCountdown()
 		case "s", "S":
@@ -147,11 +144,17 @@ func (m Model) handleKey(k tea.KeyMsg) Model {
 			m.appPhase = PhaseTitle
 		}
 
-	// ── BALL LOST (modal) ──────────────────────────────────────────────────
+	// ── BALL LOST (live field, auto-resume countdown) ──────────────────────
+	// The paddle stays controllable here so the player can reposition before
+	// the ball is re-served — no frozen paddle, no unreachable serve.
 	case PhaseBallLost:
 		switch ks {
-		case "enter", " ":
-			m.resumeGame() // continue (choice) / skip the countdown
+		case "left", "a", "A", "h":
+			m.movePaddleTarget(-KeyMoveStep)
+		case "right", "d", "D", "l":
+			m.movePaddleTarget(+KeyMoveStep)
+		case "enter":
+			m.resumeGame() // skip the countdown and serve now
 		case "m", "M":
 			m.toggleMute()
 		case "q", "Q", "esc":
@@ -202,9 +205,6 @@ func (m Model) handleKey(k tea.KeyMsg) Model {
 			m.lbFilter = "arcade"
 			m.reloadScores()
 		case "3":
-			m.lbFilter = "zen"
-			m.reloadScores()
-		case "4":
 			m.lbFilter = "timed"
 			m.reloadScores()
 		}
@@ -295,19 +295,20 @@ func (m Model) tick(now time.Time) Model {
 	return m
 }
 
-// tickBallLost drives the auto-resume countdown. Choice modals (Zen) wait for a
-// keypress and ignore the clock.
+// tickBallLost drives the auto-resume countdown. The play field stays live and
+// the paddle keeps responding (spring still steps) so the player can move into
+// position before the ball is re-served.
 func (m Model) tickBallLost(now time.Time) Model {
-	if m.lostChoice {
-		m.lastTick = now
-		return m
-	}
 	if m.lastTick.IsZero() {
 		m.lastTick = now
 		return m
 	}
 	dt := now.Sub(m.lastTick).Seconds()
+	if dt > 0.05 {
+		dt = 0.05
+	}
 	m.lastTick = now
+	m.stepPaddleSpring(dt) // keep the paddle controllable during the countdown
 	m.resumeTTL -= dt
 	if m.resumeTTL <= 0 {
 		m.resumeCount--
@@ -366,7 +367,7 @@ func (m Model) tickGame(now time.Time) Model {
 	m.updateParticles(dt)
 	m.updateFloatTexts(dt)
 
-	if m.mode == ModeArcade || m.mode == ModeZen {
+	if m.mode == ModeArcade {
 		m.updateFallingPUs(dt)
 	}
 	m.stepActivePU(dt)

@@ -87,7 +87,6 @@ func (m Model) viewTitle(t *ui.Theme) string {
 	modes := []struct{ label, desc string }{
 		{"Classic", "one life · pure score chase"},
 		{"Arcade", "three lives · power-ups"},
-		{"Zen", "endless rally · no game over"},
 		{"Time Trial", "sixty-second sprint"},
 	}
 
@@ -365,55 +364,36 @@ func (m Model) viewPaused(t *ui.Theme) string {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Ball lost — modal (continue? / resuming countdown)
+// Ball lost — live field with an auto-resume countdown banner
+//
+// The field stays on screen (paddle visible and controllable) so the player can
+// slide into position before the ball is re-served; only the ball is hidden.
 // ─────────────────────────────────────────────────────────────────────────────
 
 func (m Model) viewBallLost(t *ui.Theme) string {
-	ctr := lipgloss.NewStyle().Width(34).Align(lipgloss.Center)
-	var lines []string
+	header := m.buildHeader(t)
+	area := m.buildPlayArea(t)
+	footer := m.buildFooter(t)
 
-	if m.lostChoice {
-		lines = []string{
-			ui.SB(t.Accent).Render(spaced("BALL  OUT")),
-			"",
-			ui.S(t.Muted).Render(fmt.Sprintf("score %d", m.score)) +
-				ui.S(t.Faint).Render(fmt.Sprintf("   ·   best ×%d", m.maxStreak)),
-			"",
-			ui.S(t.Text).Render("Keep the rally going?"),
-			"",
-			ui.S(t.Faint).Render("⏎ continue        Q give up"),
+	head := "BALL OUT"
+	if m.mode == ModeArcade {
+		word := "lives"
+		if m.lives == 1 {
+			word = "life"
 		}
-	} else {
-		head := "BALL OUT"
-		if m.mode == ModeArcade {
-			head = "YOU LOST A BALL"
-		}
-		lines = []string{ui.SB(t.Danger).Render(spaced(head)), ""}
-		if m.mode == ModeArcade {
-			word := "lives"
-			if m.lives == 1 {
-				word = "life"
-			}
-			lines = append(lines, ui.S(t.Muted).Render(fmt.Sprintf("%d %s left", m.lives, word)), "")
-		}
-		n := m.resumeCount
-		if n < 1 {
-			n = 1
-		}
-		lines = append(lines,
-			ui.S(t.Faint).Render("resuming in"),
-			ui.SB(t.Accent).Render(fmt.Sprintf("%d", n)),
-			"",
-			ui.S(t.Faint).Render("␣ skip        Q give up"),
-		)
+		head = fmt.Sprintf("YOU LOST A BALL · %d %s left", m.lives, word)
 	}
+	n := m.resumeCount
+	if n < 1 {
+		n = 1
+	}
+	msg := fmt.Sprintf("%s   ·   resuming in %d   ·   ←→ get into position", head, n)
+	banner := lipgloss.NewStyle().
+		Foreground(lipgloss.Color(t.Danger)).Bold(true).
+		Width(m.width).Align(lipgloss.Center).
+		Render(msg)
 
-	content := ctr.Render(strings.Join(lines, "\n"))
-	box := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color(t.Border)).
-		Padding(1, 3).Render(content)
-	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, box)
+	return header + "\n" + banner + "\n" + area + "\n" + footer
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -494,7 +474,7 @@ func (m Model) viewLeaderboard(t *ui.Theme) string {
 	if m.confirmClear {
 		rows = append(rows, ui.SB(t.Danger).Render("  press C again to erase ALL history · any key cancels"))
 	} else {
-		rows = append(rows, ui.S(t.Faint).Render("  0 all · 1-4 filter · C clear · Q back"))
+		rows = append(rows, ui.S(t.Faint).Render("  0 all · 1-3 filter · C clear · Q back"))
 	}
 
 	box := lipgloss.NewStyle().
@@ -520,7 +500,7 @@ func (m Model) viewHelp(t *ui.Theme) string {
 		c("M", "toggle sound") +
 		c("R", "restart (pause / game over)") +
 		c("Q / Ctrl+C", "quit") +
-		"\n" + ui.S(t.Muted).Render("  POWER-UPS") + ui.S(t.Faint).Render("  (Arcade / Zen)") + "\n" +
+		"\n" + ui.S(t.Muted).Render("  POWER-UPS") + ui.S(t.Faint).Render("  (Arcade)") + "\n" +
 		c("Ⓦ Wide", "paddle +3 cells, 12s") +
 		c("ⓢ Slow", "ball −40%, 8s") +
 		c("ⓕ Fire", "double score, 15s") +

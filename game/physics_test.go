@@ -6,8 +6,8 @@ import (
 )
 
 // newTestModel builds a minimal in-bounds Model suitable for physics tests.
-// It deliberately avoids any store/disk dependency; tests use Zen mode (which
-// re-serves on a miss instead of calling endGame) or guarantee a catch.
+// It deliberately avoids any store/disk dependency; tests use Time Trial mode
+// (which re-serves on a miss instead of calling endGame) or guarantee a catch.
 func newTestModel(mode GameMode) Model {
 	m := Model{
 		appPhase: PhasePlaying,
@@ -36,7 +36,7 @@ func ballInBounds(m *Model) bool {
 // frames and asserts it always stays inside the play field. This is the
 // anti-tunnelling guarantee that the sub-stepped collision provides.
 func TestBallNeverEscapes(t *testing.T) {
-	m := newTestModel(ModeZen)
+	m := newTestModel(ModeTimeTrial)
 	speeds := []struct{ vx, vy float64 }{
 		{900, 40}, {-850, 120}, {30, 1200}, {-1500, -1500}, {600, -900},
 	}
@@ -55,7 +55,7 @@ func TestBallNeverEscapes(t *testing.T) {
 // TestSideWallReflects verifies a ball driven into a side wall is pinned to the
 // boundary and has its horizontal velocity reversed (no escape, no NaN).
 func TestSideWallReflects(t *testing.T) {
-	m := newTestModel(ModeZen)
+	m := newTestModel(ModeTimeTrial)
 	// Heading hard into the left wall, only mildly downward.
 	m.ball = Ball{X: 2, Y: 5, VX: -400, VY: 10}
 	m.updateBall(1.0 / 60.0)
@@ -100,7 +100,7 @@ func TestCornerHitIsNotAFalseMiss(t *testing.T) {
 // TestCleanMissIsCounted ensures a genuine miss (paddle elsewhere) is still
 // detected — the fix must not over-correct into never missing.
 func TestCleanMissIsCounted(t *testing.T) {
-	m := newTestModel(ModeZen) // Zen re-serves, no endGame/store needed
+	m := newTestModel(ModeTimeTrial) // Time Trial re-serves, no endGame/store needed
 	m.paddleX = 0
 	m.paddleTargX = 0 // paddle far left
 

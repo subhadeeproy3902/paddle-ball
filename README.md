@@ -22,8 +22,8 @@
 - **Sub-stepped physics** — the ball advances in collision-safe sub-steps, so it never tunnels through a wall or resets mid-rally, even at top speed.
 - **Spring-driven paddle** — a harmonica spring gives weighty, fluid control. Use the keys, or just move your **mouse** and the paddle follows.
 - **Five quiet themes** — Claude (default), Mono, Nord, Moss, Ember. Each leans on a single accent — no rainbow, no neon, no glow.
-- **Four modes** — Classic, Arcade (lives + power-ups), Zen, and Time Trial.
-- **Six power-ups** — Wide Paddle, Slow Mo, Fire Paddle, Iron Shield, Ghost Ball, Bomb (Arcade / Zen).
+- **Three modes** — Classic, Arcade (lives + power-ups), and Time Trial.
+- **Six power-ups** — Wide Paddle, Slow Mo, Fire Paddle, Iron Shield, Ghost Ball, Bomb (Arcade).
 - **Five difficulty phases** — auto-escalating by score, Warm Up → Insane.
 - **Real sound** — crisp arcade SFX from [soundcn](https://soundcn.xyz), embedded in the binary and played CGO-free (MCI on Windows, native players elsewhere); toggle with `M`.
 - **Score history** — persistent JSON store with an in-game leaderboard, per-mode filters, and lifetime stats.
@@ -43,11 +43,13 @@
 
 ### macOS / Linux
 ```bash
-# one-line installer
-curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/install.sh | bash
+# one-line installer (POSIX sh — no bash needed)
+curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/install.sh | sh
 
-# Homebrew (formula is self-hosted in this repo's Formula/ folder)
-brew install https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/Formula/pong-ball.rb
+# Homebrew — tap this repo, then install (the formula lives in its Formula/ folder).
+# `brew install <raw-url>` is NOT valid syntax; tap first.
+brew tap subhadeeproy3902/pong-ball https://github.com/subhadeeproy3902/pong-ball
+brew install subhadeeproy3902/pong-ball/pong-ball
 ```
 
 ### Windows
@@ -59,7 +61,7 @@ irm https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/install.ps
 scoop install https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/bucket/pong-ball.json
 
 # WinGet — manifests live in this repo's manifests/ folder (use the version dir)
-winget install --manifest manifests/s/subhadeeproy3902/pong-ball/1.1.0
+winget install --manifest manifests/s/subhadeeproy3902/pong-ball/1.0.0
 ```
 
 ### Any platform
@@ -77,7 +79,7 @@ All package manifests (Homebrew/Scoop/WinGet) are kept **in this repo** —
 
 ```bash
 # macOS / Linux
-curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/uninstall.sh | sh
 ```
 ```powershell
 # Windows
@@ -97,7 +99,6 @@ files. (Scoop/Homebrew installs: use `scoop uninstall pong-ball` /
 pong-ball                     # title screen
 pong-ball play                # jump straight in (Classic)
 pong-ball play --mode arcade  # Arcade mode with power-ups
-pong-ball play --mode zen     # endless rally
 pong-ball play --mode timed   # 60-second blitz
 pong-ball play --theme nord   # start on a chosen theme
 pong-ball scores              # leaderboard

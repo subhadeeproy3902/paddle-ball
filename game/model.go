@@ -31,7 +31,7 @@ const (
 	PaddleRow       = 3    // rows from bottom of play area
 	SpringFreq      = 30.0 // harmonica angular frequency (responsive chase)
 	SpringDamp      = 1.0  // harmonica damping ratio (1.0 = critically damped: smooth glide, NO overshoot/wobble)
-	PUCatchInterval = 7    // catches between power-up spawns (Arcade/Zen)
+	PUCatchInterval = 7    // catches between power-up spawns (Arcade)
 	HitBellGap      = 0.11 // min seconds between paddle-hit beeps (anti-machine-gun)
 	BounceGap       = 0.05 // min seconds between wall-bounce blips (anti-machine-gun)
 	MaxSubSteps     = 16   // physics sub-steps cap per frame (continuous collision)
@@ -61,15 +61,14 @@ type GameMode int
 const (
 	ModeClassic GameMode = iota
 	ModeArcade
-	ModeZen
 	ModeTimeTrial
 )
 
 func (m GameMode) String() string {
-	return [...]string{"Classic", "Arcade", "Zen", "Time Trial"}[m]
+	return [...]string{"Classic", "Arcade", "Time Trial"}[m]
 }
 func (m GameMode) Code() string {
-	return [...]string{"classic", "arcade", "zen", "timed"}[m]
+	return [...]string{"classic", "arcade", "timed"}[m]
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -127,7 +126,7 @@ func (k PowerUpKind) Name() string {
 func (k PowerUpKind) Duration() float64 { return []float64{12, 8, 15, 0, 0, 10}[k] }
 
 // Color returns a restrained, distinguishable tint for each power-up. These are
-// the one place several hues coexist (Arcade/Zen only) — kept muted on purpose.
+// the one place several hues coexist (Arcade only) — kept muted on purpose.
 func (k PowerUpKind) Color() string {
 	return []string{"#7fa8c9", "#6fb3a8", "#d6a35c", "#79b0bd", "#d8d4cc", "#c8705c"}[k]
 }
@@ -251,9 +250,8 @@ type Model struct {
 	countdown int
 	cdTTL     float64
 
-	// ── ball-lost modal (PhaseBallLost) ────────────────────────────────────
-	lostChoice  bool    // true = "continue?" prompt (Zen); false = auto-resume countdown
-	lostMsg     string  // headline shown in the modal
+	// ── ball-lost recovery (PhaseBallLost) ─────────────────────────────────
+	lostMsg     string  // headline shown over the field while recovering
 	resumeCount int     // 3 … 2 … 1 for the auto-resume countdown
 	resumeTTL   float64 // seconds left on the current count
 
@@ -341,8 +339,6 @@ func parseModeStr(s string) GameMode {
 	switch s {
 	case "arcade":
 		return ModeArcade
-	case "zen":
-		return ModeZen
 	case "timed", "time-trial":
 		return ModeTimeTrial
 	}

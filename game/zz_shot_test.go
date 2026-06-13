@@ -58,21 +58,13 @@ func TestShot(t *testing.T) {
 	mp.activePU = &ActivePU{Kind: PUFirePaddle, TTL: 9, Total: 15}
 	dump("zz_play.ansi", mp)
 
-	// Ball-lost: Zen choice modal
-	mz := base(92, 30)
-	mz.appPhase = PhaseBallLost
-	mz.mode = ModeZen
-	mz.lostChoice = true
-	mz.score = 128
-	mz.maxStreak = 17
-	dump("zz_lost_choice.ansi", mz)
-
-	// Ball-lost: Arcade countdown modal
+	// Ball-lost: Arcade countdown over the live field
 	ma := base(92, 30)
 	ma.appPhase = PhaseBallLost
 	ma.mode = ModeArcade
-	ma.lostChoice = false
 	ma.lives = 2
 	ma.resumeCount = 2
+	ma.resetAll()
+	ma.lives = 2
 	dump("zz_lost_count.ansi", ma)
 }

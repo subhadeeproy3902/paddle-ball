@@ -1,14 +1,16 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # uninstall.sh - removes pong-ball and ALL its data.
-# Usage:  curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/uninstall.sh | bash
-set -uo pipefail
+# POSIX sh — no bash required.
+# Usage:  curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/uninstall.sh | sh
+set -u
 
-CYAN='\033[0;36m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RESET='\033[0m'
-info()    { echo -e "${CYAN}[pong-ball]${RESET} $*"; }
-success() { echo -e "${GREEN}[pong-ball]${RESET} $*"; }
+ESC=$(printf '\033')
+CYAN="${ESC}[0;36m"; GREEN="${ESC}[0;32m"; YELLOW="${ESC}[1;33m"; RESET="${ESC}[0m"
+info()    { printf '%s[pong-ball]%s %s\n' "$CYAN" "$RESET" "$*"; }
+success() { printf '%s[pong-ball]%s %s\n' "$GREEN" "$RESET" "$*"; }
 
-echo
-echo -e "${YELLOW}This will permanently remove pong-ball and ALL its data:${RESET}"
+printf '\n'
+printf '%sThis will permanently remove pong-ball and ALL its data:%s\n' "$YELLOW" "$RESET"
 echo "  - the pong-ball binary (from your PATH)"
 echo "  - saved scores & settings  (~/.pong-ball)"
 echo "  - cached sound files       (\${TMPDIR:-/tmp}/pong-ball-sfx)"

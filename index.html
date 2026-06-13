@@ -6,7 +6,7 @@
 
 <!-- ── primary ── -->
 <title>Pong Ball — a minimalist terminal Pong game</title>
-<meta name="description" content="pong-ball is a minimalist, physics-based Pong game for the terminal: sub-stepped collisions that never glitch, a spring-driven paddle you steer with keys or mouse, five quiet themes, four modes, sound, and a persistent score history. One Go binary, installable on macOS, Linux, and Windows." />
+<meta name="description" content="pong-ball is a minimalist, physics-based Pong game for the terminal: sub-stepped collisions that never glitch, a spring-driven paddle you steer with keys or mouse, five quiet themes, three modes, sound, and a persistent score history. One Go binary, installable on macOS, Linux, and Windows." />
 <meta name="keywords" content="pong-ball, terminal game, TUI game, Pong, Go game, Bubble Tea, CLI game, terminal paddle game, ascii game, command line game, retro arcade terminal" />
 <meta name="author" content="Subhadeep Roy" />
 <meta name="theme-color" content="#181715" />
@@ -23,7 +23,7 @@
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="pong-ball" />
 <meta property="og:title" content="pong-ball — a minimalist terminal Pong game" />
-<meta property="og:description" content="Physics-based Pong for your terminal: sub-stepped collisions, a spring-driven paddle, five quiet themes, four modes. One binary, any OS." />
+<meta property="og:description" content="Physics-based Pong for your terminal: sub-stepped collisions, a spring-driven paddle, five quiet themes, three modes. One binary, any OS." />
 <meta property="og:url" content="https://pongball.mvp-subha.me/" />
 <meta property="og:image" content="https://pongball.mvp-subha.me/assets/og.png" />
 <meta property="og:image:width" content="1200" />
@@ -33,7 +33,7 @@
 <!-- ── Twitter / X card ── -->
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="pong-ball — a minimalist terminal Pong game" />
-<meta name="twitter:description" content="Physics-based Pong for your terminal. Sub-stepped collisions, spring paddle, five themes, four modes. One binary." />
+<meta name="twitter:description" content="Physics-based Pong for your terminal. Sub-stepped collisions, spring paddle, five themes, three modes. One binary." />
 <meta name="twitter:image" content="https://pongball.mvp-subha.me/assets/og.png" />
 <meta name="twitter:image:alt" content="pong-ball — a minimalist terminal Pong game" />
 <meta name="twitter:creator" content="@mvp_Subha" />
@@ -51,7 +51,7 @@
   "applicationCategory": "GameApplication",
   "applicationSubCategory": "Terminal / CLI game",
   "operatingSystem": "macOS, Linux, Windows",
-  "description": "A minimalist, physics-based Pong game for the terminal with sub-stepped collisions, a spring-driven paddle, five themes, four modes, sound, and persistent score history.",
+  "description": "A minimalist, physics-based Pong game for the terminal with sub-stepped collisions, a spring-driven paddle, five themes, three modes, sound, and persistent score history.",
   "url": "https://pongball.mvp-subha.me/",
   "downloadUrl": "https://github.com/subhadeeproy3902/pong-ball/releases",
   "softwareVersion": "1.0.0",
@@ -70,9 +70,9 @@
   "@type": "FAQPage",
   "mainEntity": [
     { "@type": "Question", "name": "What is pong-ball?",
-      "acceptedAnswer": { "@type": "Answer", "text": "pong-ball is a free, open-source, minimalist Pong game that runs in your terminal. It uses sub-stepped collision physics, a spring-driven paddle you control with the keyboard or mouse, five restrained themes, and four game modes." } },
+      "acceptedAnswer": { "@type": "Answer", "text": "pong-ball is a free, open-source, minimalist Pong game that runs in your terminal. It uses sub-stepped collision physics, a spring-driven paddle you control with the keyboard or mouse, five restrained themes, and three game modes." } },
     { "@type": "Question", "name": "How do I install pong-ball?",
-      "acceptedAnswer": { "@type": "Answer", "text": "On macOS or Linux run: curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/install.sh | bash. You can also use Homebrew (brew install pong-ball), Go (go install github.com/subhadeeproy3902/pong-ball@latest), Docker, or download a prebuilt binary from the releases page." } },
+      "acceptedAnswer": { "@type": "Answer", "text": "On macOS or Linux run: curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/install.sh | sh. You can also use Homebrew (brew tap subhadeeproy3902/pong-ball https://github.com/subhadeeproy3902/pong-ball, then brew install subhadeeproy3902/pong-ball/pong-ball), Go (go install github.com/subhadeeproy3902/pong-ball@latest), Docker, or download a prebuilt binary from the releases page." } },
     { "@type": "Question", "name": "Which operating systems are supported?",
       "acceptedAnswer": { "@type": "Answer", "text": "pong-ball ships prebuilt binaries for macOS, Linux, and Windows on both amd64 and arm64, plus .deb/.rpm/.apk packages and a Docker image." } },
     { "@type": "Question", "name": "Is pong-ball free and open source?",
@@ -325,7 +325,7 @@
 
       <div class="cmd">
         <span class="prompt">$</span>
-        <code id="install-cmd">curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/install.sh | bash</code>
+        <code id="install-cmd">curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/install.sh | sh</code>
         <button id="copy-btn" aria-label="Copy install command">Copy</button>
       </div>
 
@@ -371,7 +371,7 @@
       <div class="feature">
         <div class="fi">04</div>
         <h3>Power-ups &amp; phases</h3>
-        <p>Six power-ups and five escalating difficulty phases in Arcade and Zen, from a gentle warm-up to genuinely insane.</p>
+        <p>Six power-ups and five escalating difficulty phases in Arcade, from a gentle warm-up to genuinely insane.</p>
       </div>
       <div class="feature">
         <div class="fi">05</div>
@@ -423,7 +423,7 @@
 <section id="modes">
   <div class="wrap">
     <div class="sec-head">
-      <span class="eyebrow">Four ways to play</span>
+      <span class="eyebrow">Three ways to play</span>
       <h2>Pick a pace.</h2>
     </div>
     <div class="modes">
@@ -437,10 +437,6 @@
       </div>
       <div class="mode">
         <div class="n">03</div>
-        <div><h3>Zen</h3><p>Endless rally, no game over. Just the bounce.</p></div>
-      </div>
-      <div class="mode">
-        <div class="n">04</div>
         <div><h3>Time Trial</h3><p>A sixty-second sprint for the highest score you can stack.</p></div>
       </div>
     </div>
@@ -456,13 +452,14 @@
     <div class="os-label">macOS · Linux</div>
     <div class="install-grid">
       <div class="block">
-        <div class="bt">curl <button class="copy" data-copy="curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/install.sh | bash">Copy</button></div>
+        <div class="bt">curl <button class="copy" data-copy="curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/install.sh | sh">Copy</button></div>
         <pre><code><span class="c"># one-line install</span>
-curl -fsSL https://raw.githubusercontent.com/<span class="a">subhadeeproy3902</span>/pong-ball/main/install.sh | bash</code></pre>
+curl -fsSL https://raw.githubusercontent.com/<span class="a">subhadeeproy3902</span>/pong-ball/main/install.sh | sh</code></pre>
       </div>
       <div class="block">
-        <div class="bt">Homebrew <button class="copy" data-copy="brew install https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/Formula/pong-ball.rb">Copy</button></div>
-        <pre><code>brew install https://raw.githubusercontent.com/<span class="a">subhadeeproy3902</span>/pong-ball/main/Formula/pong-ball.rb</code></pre>
+        <div class="bt">Homebrew <button class="copy" data-copy="brew tap subhadeeproy3902/pong-ball https://github.com/subhadeeproy3902/pong-ball && brew install subhadeeproy3902/pong-ball/pong-ball">Copy</button></div>
+        <pre><code>brew tap <span class="a">subhadeeproy3902</span>/pong-ball https://github.com/<span class="a">subhadeeproy3902</span>/pong-ball
+brew install <span class="a">subhadeeproy3902</span>/pong-ball/pong-ball</code></pre>
       </div>
     </div>
 
@@ -503,8 +500,8 @@ winget install --manifest <span class="a">manifests/s/subhadeeproy3902/pong-ball
     <div class="os-label">Uninstall</div>
     <div class="install-grid">
       <div class="block">
-        <div class="bt">macOS / Linux <button class="copy" data-copy="curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/uninstall.sh | bash">Copy</button></div>
-        <pre><code>curl -fsSL https://raw.githubusercontent.com/<span class="a">subhadeeproy3902</span>/pong-ball/main/uninstall.sh | bash</code></pre>
+        <div class="bt">macOS / Linux <button class="copy" data-copy="curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/uninstall.sh | sh">Copy</button></div>
+        <pre><code>curl -fsSL https://raw.githubusercontent.com/<span class="a">subhadeeproy3902</span>/pong-ball/main/uninstall.sh | sh</code></pre>
       </div>
       <div class="block">
         <div class="bt">Windows <button class="copy" data-copy="irm https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/uninstall.ps1 | iex">Copy</button></div>
@@ -539,11 +536,11 @@ winget install --manifest <span class="a">manifests/s/subhadeeproy3902/pong-ball
     <div class="faq">
       <details open>
         <summary>What is pong-ball?</summary>
-        <p>A free, open-source, minimalist Pong game that runs entirely in your terminal. It pairs sub-stepped collision physics with a spring-driven paddle you steer with the keyboard or mouse, five restrained themes, four game modes, sound, and a persistent score history.</p>
+        <p>A free, open-source, minimalist Pong game that runs entirely in your terminal. It pairs sub-stepped collision physics with a spring-driven paddle you steer with the keyboard or mouse, five restrained themes, three game modes, sound, and a persistent score history.</p>
       </details>
       <details>
         <summary>How do I install it?</summary>
-        <p>On macOS or Linux: <code>curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/install.sh | bash</code>. Or use Homebrew (<code>brew install pong-ball</code>), Go (<code>go install github.com/subhadeeproy3902/pong-ball@latest</code>), Docker, or a prebuilt binary from the releases page.</p>
+        <p>On macOS or Linux: <code>curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/install.sh | sh</code>. Or use Homebrew (<code>brew tap subhadeeproy3902/pong-ball https://github.com/subhadeeproy3902/pong-ball &amp;&amp; brew install subhadeeproy3902/pong-ball/pong-ball</code>), Go (<code>go install github.com/subhadeeproy3902/pong-ball@latest</code>), Docker, or a prebuilt binary from the releases page.</p>
       </details>
       <details>
         <summary>Which operating systems are supported?</summary>

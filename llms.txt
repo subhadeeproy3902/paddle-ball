@@ -1,6 +1,6 @@
 # pong-ball
 
-> pong-ball is a free, open-source, minimalist Pong game that runs in the terminal. It uses sub-stepped collision physics (the ball never tunnels through walls or glitches), a spring-driven paddle controlled by keyboard or mouse, five restrained dark themes, four game modes, terminal-bell sound, and a persistent local score history. It is written in Go and ships as a single binary for macOS, Linux, and Windows.
+> pong-ball is a free, open-source, minimalist Pong game that runs in the terminal. It uses sub-stepped collision physics (the ball never tunnels through walls or glitches), a spring-driven paddle controlled by keyboard or mouse, five restrained dark themes, three game modes, terminal-bell sound, and a persistent local score history. It is written in Go and ships as a single binary for macOS, Linux, and Windows.
 
 ## About
 
@@ -16,15 +16,15 @@
 - Sub-stepped continuous collision physics — smooth and glitch-free at any speed
 - Spring-driven paddle, controllable with arrow keys, A/D, or the mouse
 - Five themes: Claude (default), Mono, Nord, Moss, Ember — restrained, single-accent palettes
-- Four modes: Classic (one life), Arcade (lives + power-ups), Zen (endless), Time Trial (60s)
+- Three modes: Classic (one life), Arcade (lives + power-ups), Time Trial (60s)
 - Six power-ups and five escalating difficulty phases
 - Persistent JSON score history with an in-game leaderboard
 - Single static binary, zero runtime dependencies
 
 ## Install
 
-- macOS / Linux one-liner: `curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/install.sh | bash`
-- Homebrew: `brew install subhadeeproy3902/pong-ball/pong-ball`
+- macOS / Linux one-liner: `curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/install.sh | sh`
+- Homebrew: `brew tap subhadeeproy3902/pong-ball https://github.com/subhadeeproy3902/pong-ball && brew install subhadeeproy3902/pong-ball/pong-ball`
 - Go: `go install github.com/subhadeeproy3902/pong-ball@latest`
 - Docker: `docker run --rm -it ghcr.io/subhadeeproy3902/pong-ball:latest`
 - Binaries, .deb/.rpm/.apk packages, and Windows zip: https://github.com/subhadeeproy3902/pong-ball/releases

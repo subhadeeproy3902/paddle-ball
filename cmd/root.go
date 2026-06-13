@@ -48,7 +48,7 @@ func Execute(version, commit, date string) {
 			return runGame(playMode, playTheme)
 		},
 	}
-	playCmd.Flags().StringVarP(&playMode, "mode", "m", "", "Game mode: classic | arcade | zen | timed")
+	playCmd.Flags().StringVarP(&playMode, "mode", "m", "", "Game mode: classic | arcade | timed")
 	playCmd.Flags().StringVarP(&playTheme, "theme", "t", "", "Theme: claude | mono | nord | moss | ember")
 
 	// ── scores ───────────────────────────────────────────────────────────
@@ -104,7 +104,7 @@ func Execute(version, commit, date string) {
 			return nil
 		},
 	}
-	scoresCmd.Flags().StringVarP(&scoresMode, "mode", "m", "", "Filter by mode: classic | arcade | zen | timed")
+	scoresCmd.Flags().StringVarP(&scoresMode, "mode", "m", "", "Filter by mode: classic | arcade | timed")
 	scoresCmd.Flags().BoolVarP(&scoresAll, "all", "a", false, "Show full history (not just top 10)")
 	scoresCmd.Flags().BoolVar(&scoresJSON, "json", false, "Print raw JSON to stdout")
 

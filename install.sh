@@ -1,17 +1,20 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # install.sh — one-line installer for pong-ball
-# Usage:  curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/install.sh | bash
-set -euo pipefail
+# POSIX sh — no bash required.
+# Usage:  curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/install.sh | sh
+set -eu
 
 REPO="subhadeeproy3902/pong-ball"
 BINARY="pong-ball"
 INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
 
 # ── colour helpers ──────────────────────────────────────────────────────────
-RED='\033[0;31m'; GREEN='\033[0;32m'; CYAN='\033[0;36m'; BOLD='\033[1m'; RESET='\033[0m'
-info()    { echo -e "${CYAN}[pong-ball]${RESET} $*"; }
-success() { echo -e "${GREEN}[pong-ball]${RESET} $*"; }
-error()   { echo -e "${RED}[pong-ball] ERROR:${RESET} $*" >&2; exit 1; }
+# Real ESC chars (not literal \033) so plain printf '%s' renders them anywhere.
+ESC=$(printf '\033')
+RED="${ESC}[0;31m"; GREEN="${ESC}[0;32m"; CYAN="${ESC}[0;36m"; BOLD="${ESC}[1m"; RESET="${ESC}[0m"
+info()    { printf '%s[pong-ball]%s %s\n' "$CYAN" "$RESET" "$*"; }
+success() { printf '%s[pong-ball]%s %s\n' "$GREEN" "$RESET" "$*"; }
+error()   { printf '%s[pong-ball] ERROR:%s %s\n' "$RED" "$RESET" "$*" >&2; exit 1; }
 
 # ── detect OS ───────────────────────────────────────────────────────────────
 OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
@@ -81,6 +84,6 @@ fi
 INSTALLED_VER="$("$DEST" version 2>/dev/null | head -1 || echo '?')"
 success "Installed ${BOLD}${BINARY}${RESET} → ${DEST}"
 success "Version: ${INSTALLED_VER}"
-echo
-echo -e "  Run ${CYAN}pong-ball${RESET} to play!"
-echo -e "  Run ${CYAN}pong-ball --help${RESET} for all commands."
+printf '\n'
+printf '  Run %spong-ball%s to play!\n' "$CYAN" "$RESET"
+printf '  Run %spong-ball --help%s for all commands.\n' "$CYAN" "$RESET"

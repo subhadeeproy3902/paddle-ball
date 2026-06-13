@@ -93,7 +93,7 @@ Each `v*` tag produces, attached to the GitHub Release:
 
 | Platform | Command |
 |---|---|
-| macOS / Linux | `curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/install.sh \| bash` |
+| macOS / Linux | `curl -fsSL https://raw.githubusercontent.com/subhadeeproy3902/pong-ball/main/install.sh \| sh` |
 | Any Go env | `go install github.com/subhadeeproy3902/pong-ball@latest` |
 | Docker | `docker run --rm -it ghcr.io/subhadeeproy3902/pong-ball:latest` |
 | Debian/Ubuntu | download the `.deb` from Releases → `sudo dpkg -i pong-ball_*.deb` |
