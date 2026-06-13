@@ -1,12 +1,12 @@
 {
-    "version": "1.0.4",
+    "version": "1.0.5",
     "architecture": {
         "64bit": {
-            "url": "https://github.com/subhadeeproy3902/paddle-ball/releases/download/v1.0.4/paddle-ball_windows_amd64.zip",
+            "url": "https://github.com/subhadeeproy3902/paddle-ball/releases/download/v1.0.5/paddle-ball_windows_amd64.zip",
             "bin": [
                 "paddle-ball.exe"
             ],
-            "hash": "c3ff1073a20645aca616a718ac107d1cc649737354c9e545c7d5c6da465430e8"
+            "hash": "617dc274d856ea9be9e359fa05e49f82d9c27ba3d9db1b9a4832c3eb2797a1e6"
         }
     },
     "homepage": "https://paddleball.mvp-subha.me",
