@@ -1,0 +1,15 @@
+{
+    "version": "1.0.3",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/subhadeeproy3902/paddle-ball/releases/download/v1.0.3/paddle-ball_windows_amd64.zip",
+            "bin": [
+                "paddle-ball.exe"
+            ],
+            "hash": "1388a583d6635c5c4399dea4ec22d49c398863a0ae9b1d948ad7b81e6ac8ddb7"
+        }
+    },
+    "homepage": "https://paddleball.mvp-subha.me",
+    "license": "MIT",
+    "description": "A minimalist physics-based terminal paddleball game with score history"
+}
